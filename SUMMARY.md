@@ -7,5 +7,6 @@
   * [11月](2019/11yue/README.md)
     * [运维监控--prometheus + grafana](2019/11yue/yun-wei-jian-kong-prometheus-+-grafana.md)
   * [12月](2019/12-yue/README.md)
+    * [Github见面会](2019/12-yue/github-jian-mian-hui.md)
     * [Sentry](2019/12-yue/sentry.md)
 
