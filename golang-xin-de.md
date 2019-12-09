@@ -40,6 +40,8 @@ func main() {
 
 但是，当实现了一个接收者是指针类型的方法，如果此时自动生成一个接收者是值类型的方法，原本期望对接收者的改变（通过指针实现），现在无法实现，因为值类型会产生一个拷贝，不会真正影响调用者。
 
+语法上 `T` 能直接调 `*T` 的方法仅仅是 `Go` 的语法糖，先取到T的指针再去调用*T的方法。
+
 
 
 #### iface VS eface
@@ -96,6 +98,101 @@ func main() {
 #### 类型转换
 
 > &lt;结果类型&gt; := &lt;目标类型&gt; \( &lt;表达式&gt; \)
+
+```
+var i int = 9
+var f float64
+
+f = float64(i)
+a := int(f)
+
+s := []int(i) // cannot convert i (type int) to type []int
+```
+
+
+
+#### 类型断言
+
+空接口 `interface{}` 没有定义任何函数，因此 Go 中所有类型都实现了空接口。当一个函数的形参是 `interface{}`，那么在函数中，需要对形参进行断言，从而得到它的真实类型。
+
+> <目标类型的值>，<布尔参数> := <表达式>.( 目标类型 ) // 安全类型断言
+> <目标类型的值> := <表达式>.( 目标类型 )　　//非安全类型断言
+
+```
+package main
+
+import "fmt"
+
+type Student struct {
+    Name string
+    Age int
+}
+
+func main() {
+    var i interface{} = new(Student)
+    s, ok := i.(Student)	// i.(*Student)
+    if ok {
+        fmt.Println(s)
+    }
+}
+```
+
+还可以使用switch判断接口类型
+
+```
+func judge(v interface{}) {
+    fmt.Printf("%p %v\n", &v, v)
+
+    switch v := v.(type) {
+    case nil:
+        fmt.Printf("%p %v\n", &v, v)
+        fmt.Printf("nil type[%T] %v\n", v, v)
+
+    case Student:
+        fmt.Printf("%p %v\n", &v, v)
+        fmt.Printf("Student type[%T] %v\n", v, v)
+
+    case *Student:
+        fmt.Printf("%p %v\n", &v, v)
+        fmt.Printf("*Student type[%T] %v\n", v, v)
+
+    default:
+        fmt.Printf("%p %v\n", &v, v)
+        fmt.Printf("unknow\n")
+    }
+}
+
+type Student struct {
+    Name string
+    Age int
+}
+```
+
+
+
+`fmt.Println` 函数的参数是 `interface`。
+
+对于内置类型，函数内部会用穷举法，得出它的真实类型，然后转换为字符串打印。
+
+而对于自定义类型，首先确定该类型是否实现了 `String()` 方法（接收者最好为值类型），如果实现了，则直接打印输出 `String()` 方法的结果；否则，会通过反射来遍历对象的成员进行打印。
+
+
+
+### 接口转换的原理
+
+当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认为该类型实现了该接口。
+
+例如某类型有 `m` 个方法，某接口有 `n` 个方法，则很容易知道这种判定的时间复杂度为 `O(mn)`，Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 `O(m+n)`。
+
+1. 具体类型转空接口时，_type 字段直接复制源类型的 _type；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。
+2. 具体类型转非空接口时，入参 tab 是编译器在编译阶段预先生成好的，新接口 tab 字段直接指向入参 tab 指向的 itab；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。
+3. 而对于接口转接口，itab 调用 getitab 函数获取。只用生成一次，之后直接从 hash 表中获取。
+
+
+
+
+
+
 
 
 
