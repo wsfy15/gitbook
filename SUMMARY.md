@@ -9,5 +9,6 @@
   * [12月](2019/12-yue/README.md)
     * [Github见面会](2019/12-yue/github-jian-mian-hui.md)
     * [Sentry](2019/12-yue/sentry.md)
-* [golang心得](golang-xin-de.md)
+* [golang心得](golang-xin-de/README.md)
+  * [interface](golang-xin-de/interface.md)
 
