@@ -173,3 +173,169 @@ type Student struct {
 2. 具体类型转非空接口时，入参 tab 是编译器在编译阶段预先生成好的，新接口 tab 字段直接指向入参 tab 指向的 itab；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。
 3. 而对于接口转接口，itab 调用 getitab 函数获取。只用生成一次，之后直接从 hash 表中获取。
 
+# reflection
+
+## 接口的值
+
+接口类型的值包含`(value, type)`对。
+
+```
+var r io.Reader
+tty, err := os.OpenFile("/dev/tty", os.O_RDWR, 0)
+if err != nil {
+    return nil, err
+}
+r = tty // r 的 (value, type)对为：(tty, *os.File)
+
+var w io.Writer
+w = r.(io.Writer)	// w 的 (value, type)对为：(tty, *os.File)
+```
+
+接口的静态类型确定可以使用接口变量调用哪些方法，即使内部的具体值可能具有更大的方法集。
+
+
+
+## 从接口值到反射对象
+
+最基础的反射就是从一个接口变量得到其`(value, type)`对，reflect包提供了`reflect.TypeOf` 和`reflect.ValueOf`这两个方法。
+
+```
+var x float64 = 3.4
+fmt.Println("type:", reflect.TypeOf(x))	// type: float64
+fmt.Println("value:", reflect.ValueOf(x)) // value: 5.4
+fmt.Println("value:", reflect.ValueOf(x).String()) // value: <float64 Value>
+```
+
+`reflect.Type`和`reflect.Value`具有一系列方法。
+
+```
+var x float64 = 3.4
+v := reflect.ValueOf(x)
+fmt.Println("type:", v.Type())		// type: float64
+fmt.Println("kind is float64:", v.Kind() == reflect.Float64) // kind is float64: true
+fmt.Println("value:", v.Float())	// value: 3.4
+```
+
+也有`SetInt` 和`SetFloat`之类的方法，但使用前需要确认是否可以使用。
+
+- `Kind`方法描述的是反射对象的底层类型，而不是静态类型
+
+  ```
+  type MyInt int
+  var x MyInt = 7
+  v := reflect.ValueOf(x)
+  v.Kind() === reflect.Int	// 虽然x的静态类型是MyInt
+  ```
+
+- `getter`和`setter`方法都是在能容纳该值的最大类型上运行。以int64（有符号整数）为例，`reflect.Value`的`Int()`返回int64、`SetInt()`接收一个int64的值（可能会转换为涉及的实际类型）
+
+  ```
+  var x uint8 = 'x'
+  v := reflect.ValueOf(x)
+  fmt.Println("type:", v.Type())    // uint8.
+  fmt.Println("kind is uint8: ", v.Kind() == reflect.Uint8)  // true.
+  x = uint8(v.Uint())              // v.Uint returns a uint64.
+  ```
+
+  
+
+## 从反射对象到接口值
+
+`reflect.Value` 对象的`Interface` 方法，将type和value信息打包为接口形式的表示并返回，实现从反射对象到接口的转换。
+
+```
+y := v.Interface().(float64) // y will have type float64.
+```
+
+fmt包的`Println`、`Printf`等方法以空接口的形式接收变量，然后通过`reflect.Value`得到这些接口的实际值。因此，如果我们要打印反射对象的实际值，只需要传递该对象的`Interface` 方法的结果：
+
+```
+fmt.Println(v.Interface())
+fmt.Printf("value is %7.1e\n", v.Interface()) // 知道是个float64值，格式化输出 // 3.4e+00
+// 不需要类型断言
+```
+
+
+
+## 修改反射对象
+
+修改反射对象时，必须使用settable的value。
+
+```
+var x float64 = 3.4
+v := reflect.ValueOf(x)
+v.SetFloat(7.1) // Error: will panic.
+// panic: reflect: reflect.flag.mustBeAssignable using unaddressable value
+```
+
+问题不在于值7.1是不可寻址的，而是因为 v不是settable的。
+
+settable是`reflect.Value`的属性，但并不是所有类型的`reflect.Value`都具有该属性。
+
+```
+var x float64 = 3.4
+v := reflect.ValueOf(x)
+fmt.Println("settability of v:", v.CanSet()) // settability of v: false
+```
+
+settability是指反射对象可以修改用于创建反射对象的实际对象的存储空间，settability由反射对象是否持有原始item确定。上例中，传入`reflect.ValueOf`方法的是变量x的copy，而不是x本身。
+
+与函数传参的传值、传引用类似，要想修改反射对象，需要传入指针。
+
+```
+var x float64 = 3.4
+p := reflect.ValueOf(&x) 
+fmt.Println("type of p:", p.Type())	// type of p: *float64
+fmt.Println("settability of p:", p.CanSet()) // settability of p: false
+```
+
+虽然指针的反射对象不可以修改，我们想修改的也不是指针，而是指针指向的值。可以通过`reflect.Value`的`Elem` 方法，会将指针指向的内容保存在新的`reflect.Value`变量中。
+
+```
+v := p.Elem()
+fmt.Println("settability of v:", v.CanSet()) // settability of v: true
+
+v.SetFloat(7.1)
+fmt.Println(v.Interface())	// 7.1
+fmt.Println(x)	// 7.1
+```
+
+
+
+### 通过反射修改struct
+
+使用反射修改结构体的字段更常见，只要有了结构的地址，就可以修改其字段。
+
+```
+type T struct {
+    A int	// 只有首字母大写的字段才可以被修改（settable）
+    B string
+}
+t := T{23, "skidoo"}
+s := reflect.ValueOf(&t).Elem()
+typeOfT := s.Type()
+for i := 0; i < s.NumField(); i++ {
+    f := s.Field(i)
+    fmt.Printf("%d: %s %s = %v\n", i,
+        typeOfT.Field(i).Name, f.Type(), f.Interface())
+}
+
+output:
+0: A int = 23
+1: B string = skidoo
+
+s.Field(0).SetInt(77)
+s.Field(1).SetString("Sunset Strip")
+fmt.Println("t is now", t) // t is now {77 Sunset Strip}
+```
+
+
+
+
+
+
+
+
+
+
+
