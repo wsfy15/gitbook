@@ -11,4 +11,7 @@
     * [Sentry](2019/12-yue/sentry.md)
 * [golang心得](golang-xin-de/README.md)
   * [interface](golang-xin-de/interface.md)
+* [法律小知识](fa-lv-xiao-zhi-shi/README.md)
+  * [租房](fa-lv-xiao-zhi-shi/zu-fang.md)
+  * [买房](fa-lv-xiao-zhi-shi/mai-fang.md)
 
