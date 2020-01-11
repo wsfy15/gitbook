@@ -40,6 +40,7 @@
   * [删库](fa-lv-xiao-zhi-shi/shan-ku.md)
   * [受贿](fa-lv-xiao-zhi-shi/shou-hui.md)
   * [裁员](fa-lv-xiao-zhi-shi/cai-yuan.md)
+  * [外挂](fa-lv-xiao-zhi-shi/wai-gua.md)
   * [套路贷](fa-lv-xiao-zhi-shi/tao-lu-dai.md)
   * [盗图侵权](fa-lv-xiao-zhi-shi/dao-tu-qin-quan.md)
   * [故意伤害罪](fa-lv-xiao-zhi-shi/gu-yi-shang-hai-zui.md)
