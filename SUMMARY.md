@@ -14,6 +14,8 @@
     * [数学](2020/1-yue/shu-xue.md)
 * [golang心得](golang-xin-de/README.md)
   * [interface](golang-xin-de/interface.md)
+* [数学](shu-xue/README.md)
+  * [二进制](shu-xue/er-jin-zhi.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
