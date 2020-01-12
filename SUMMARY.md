@@ -13,8 +13,6 @@
   * [interface](golang-xin-de/interface.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
-  * [租房](fa-lv-xiao-zhi-shi/zu-fang.md)
-  * [买房](fa-lv-xiao-zhi-shi/mai-fang.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
   * [Vpn](fa-lv-xiao-zhi-shi/vpn.md)
   * [保密协议 and 竞业限制](fa-lv-xiao-zhi-shi/bao-mi-xie-yi-and-jing-ye-xian-zhi.md)
