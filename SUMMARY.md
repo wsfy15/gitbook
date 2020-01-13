@@ -16,6 +16,7 @@
 * [数学](shu-xue/README.md)
   * [二进制](shu-xue/er-jin-zhi.md)
   * [动态规划](shu-xue/dong-tai-gui-hua.md)
+  * [树](shu-xue/shu.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
