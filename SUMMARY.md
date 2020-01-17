@@ -19,6 +19,7 @@
   * [树](shu-xue/shu.md)
   * [概率和统计](shu-xue/gai-lv-he-tong-ji.md)
   * [马尔可夫模型](shu-xue/ma-er-ke-fu-mo-xing.md)
+  * [信息熵与决策树](shu-xue/xin-xi-shang-yu-jue-ce-shu.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
