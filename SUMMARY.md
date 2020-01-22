@@ -22,6 +22,7 @@
   * [信息熵与决策树](shu-xue/xin-xi-shang-yu-jue-ce-shu.md)
   * [归一化和标准化](shu-xue/gui-yi-hua-he-biao-zhun-hua.md)
   * [统计意义](shu-xue/tong-ji-yi-yi.md)
+  * [线性代数](shu-xue/xian-xing-dai-shu.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
