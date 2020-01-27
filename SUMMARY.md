@@ -26,6 +26,7 @@
   * [线性回归](shu-xue/xian-xing-hui-gui.md)
   * [文本检索与聚类](shu-xue/wen-ben-jian-suo-yu-ju-lei.md)
   * [PCA](shu-xue/pca.md)
+  * [SVD](shu-xue/svd.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
