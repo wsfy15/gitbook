@@ -30,6 +30,7 @@
   * [缓存系统](shu-xue/huan-cun-xi-tong.md)
   * [搜索引擎](shu-xue/sou-suo-yin-qing.md)
   * [推荐系统](shu-xue/tui-jian-xi-tong.md)
+  * [用户画像](shu-xue/yong-hu-hua-xiang.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
