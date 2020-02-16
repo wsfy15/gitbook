@@ -36,7 +36,7 @@
   * [排序](suan-fa-yu-shu-ju-jie-gou/pai-xu.md)
   * [二分查找](suan-fa-yu-shu-ju-jie-gou/er-fen-cha-zhao.md)
   * [跳表](suan-fa-yu-shu-ju-jie-gou/tiao-biao.md)
-  * [哈希表与散列](suan-fa-yu-shu-ju-jie-gou/ha-xi-biao-yu-san-lie.md)
+  * [散列表与哈希算法](suan-fa-yu-shu-ju-jie-gou/ha-xi-biao-yu-san-lie.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
