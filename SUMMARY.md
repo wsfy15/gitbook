@@ -38,6 +38,7 @@
   * [跳表](suan-fa-yu-shu-ju-jie-gou/tiao-biao.md)
   * [散列表与哈希算法](suan-fa-yu-shu-ju-jie-gou/ha-xi-biao-yu-san-lie.md)
   * [树](suan-fa-yu-shu-ju-jie-gou/shu/README.md)
+    * [二叉搜索树](suan-fa-yu-shu-ju-jie-gou/shu/er-cha-sou-suo-shu.md)
     * [平衡二叉树](suan-fa-yu-shu-ju-jie-gou/shu/ping-heng-er-cha-shu.md)
     * [红黑树](suan-fa-yu-shu-ju-jie-gou/shu/hong-hei-shu.md)
     * [递归树](suan-fa-yu-shu-ju-jie-gou/shu/di-gui-shu.md)
