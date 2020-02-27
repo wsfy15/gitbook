@@ -32,6 +32,8 @@
   * [推荐系统](shu-xue/tui-jian-xi-tong.md)
   * [用户画像](shu-xue/yong-hu-hua-xiang.md)
 * [算法与数据结构](suan-fa-yu-shu-ju-jie-gou/README.md)
+  * [堆](suan-fa-yu-shu-ju-jie-gou/dui.md)
+  * [图](suan-fa-yu-shu-ju-jie-gou/tu.md)
   * [链表、栈、队列](suan-fa-yu-shu-ju-jie-gou/lian-biao-zhan-dui-lie.md)
   * [排序](suan-fa-yu-shu-ju-jie-gou/pai-xu.md)
   * [二分查找](suan-fa-yu-shu-ju-jie-gou/er-fen-cha-zhao.md)
