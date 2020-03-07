@@ -2,11 +2,9 @@
 
 从最简单的背包问题开始：假设有一个可以容纳100kg物品的背包，可以装各种物品。有以下5种豆子，每种豆子的**总量**和**总价值**都各不相同。为了**让背包中所装物品的总价值最大**，我们如何选择在背包中装哪些豆子？每种豆子又该装多少呢？
 
-![1583417959174](tan-xin-suan-fa.assets/1583417959174.png)
+![1583417959174](../.gitbook/assets/1583417959174.png)
 
 只要先算一算每个物品的单价，按照单价由高到低依次来装就好了。单价从高到低排列，依次是：黑豆、绿豆、红豆、青豆、黄豆，所以，利用贪心选择的思想，我们可以往背包里装20kg黑豆、30kg绿豆、50kg红豆。
-
-
 
 ## 解决步骤
 
@@ -14,27 +12,21 @@
 2. 尝试用贪心算法解决：每次选择当前情况下，**在对限制值同等贡献量的情况下，对期望值贡献最大的数据。**
 3. 举例验证贪心算法产生的结果是否是最优的。大部分情况下，举几个例子验证一下就可以了。严格地证明贪心算法的正确性，是非常复杂的，需要涉及比较多的数学推理。而且，从实践的角度来说，大部分能用贪心算法解决的问题，贪心算法的正确性都是显而易见的，也不需要严格的数学推导证明。
 
-
-
 **实际上，用贪心算法解决问题的思路，并不总能给出最优解。**
 
 在一个有权图中，我们从顶点S开始，找一条到顶点T的最短路径（路径中边的权值和最小）。
 
-![1583419687714](tan-xin-suan-fa.assets/1583419687714.png)
+![1583419687714](../.gitbook/assets/1583419687714.png)
 
 贪心算法的解决思路是，每次都选择一条跟当前顶点相连的权最小的边，直到找到顶点T。按照这种思路，我们求出的最短路径是`S->A->E->T`，路径长度是`1+4+4=9`。
 
 但是，这种贪心的选择方式，最终求的路径并不是最短路径，因为路径`S->B->D->T`才是最短路径，因为这条路径的长度是`2+2+2=6`。
 
-
-
 对于贪心算法，**前面的选择，会影响后面的选择**。即便我们第一步选择最优的走法，但有可能因为这一步选择，导致后面每一步的选择都很糟糕，最终也就无缘全局最优解了。
-
-
 
 ## 分糖果
 
-有$m$个糖果和$n$个孩子，现在要把糖果分给这些孩子吃，但是糖果少，孩子多($m<n$)，所以糖果只能分配给一部分孩子。
+有$m$个糖果和$n$个孩子，现在要把糖果分给这些孩子吃，但是糖果少，孩子多\($m&lt;n$\)，所以糖果只能分配给一部分孩子。
 
 每个糖果的大小不等，这$m$个糖果的大小分别是`s1，s2，s3，……，sm`。
 
@@ -50,85 +42,77 @@
 
 我们每次从剩下的孩子中，找出对糖果大小需求最小的，然后发给他剩下的糖果中能满足他的最小的糖果，这样得到的分配方案，也就是满足的孩子个数最多的方案。
 
-
-
 ## 区间覆盖
 
 假设有$n$个区间，区间的起始端点和结束端点分别是`[l1, r1]，[l2, r2]，[l3, r3]，……，[ln, rn]`。我们从这$n$个区间中选出一部分区间，这部分区间满足**两两不相交**（端点相交的情况不算相交），最多能选出多少个区间呢？
 
-![1583420678307](tan-xin-suan-fa.assets/1583420678307.png)
+![1583420678307](../.gitbook/assets/1583420678307.png)
 
 解决思路：假设这$n$个区间中最左端点是`lmin`，最右端点是`rmax`。这个问题就相当于，我们选择几个不相交的区间，从左到右将`[lmin, rmax]`覆盖上。按照**结束端点从小到大的顺序**对这$n$个区间排序。
 
 我们每次选择的时候，**选择右端点最小的，且左端点跟前面的已经覆盖的区间不重合的**，然后将包含右端点的区间淘汰掉，这样可以让剩下的未覆盖区间尽可能的大，就可以放置更多的区间。
 
-![1583420838754](tan-xin-suan-fa.assets/1583420838754.png)
+![1583420838754](../.gitbook/assets/1583420838754.png)
 
-```
+```text
 type Interval struct {
-	Start int
-	End int
+    Start int
+    End int
 }
 
 func(this Interval) String() string {
-	return fmt.Sprintf("[%+v, %+v]", this.Start, this.End)
+    return fmt.Sprintf("[%+v, %+v]", this.Start, this.End)
 }
 
 type Intervals struct {
-	Data []Interval
-	By   func(p1, p2 *Interval) bool
+    Data []Interval
+    By   func(p1, p2 *Interval) bool
 }
 
 func(this Intervals) Len() int {
-	return len(this.Data)
+    return len(this.Data)
 }
 
 func(this Intervals) Swap(i, j int) {
-	this.Data[i], this.Data[j] = this.Data[j], this.Data[i]
+    this.Data[i], this.Data[j] = this.Data[j], this.Data[i]
 }
 
 func(this Intervals) Less(i, j int) bool {
-	return this.By(&s.Data[i], &s.Data[j])
+    return this.By(&s.Data[i], &s.Data[j])
 }
 
 func IntervalCover(input []Interval) {
-	// 先根据End从小到大排序
-	sorter := func(p1, p2 *Interval) bool {
-		return p1.End < p2.End
-	}
-	intervals := Intervals{
-		Data: input,
-		By: sorter,
-	}
-	sort.Sort(intervals)
-	
-	// 选择End最小的，然后排除掉区间包含End的元素。重复这个过程
-	for i := 0; i < len(input); {
-		fmt.Printn(intervals.Data[i])
-		j := i + 1
-		for ; j < len(input); j++ {
-			if intervals.Data[j].Start < intervals.Data[i].End && intervals.Data[j].End > intervals.Data[i].End {
-				continue
-			}
-			break
-		}
-		i = j
-	}
+    // 先根据End从小到大排序
+    sorter := func(p1, p2 *Interval) bool {
+        return p1.End < p2.End
+    }
+    intervals := Intervals{
+        Data: input,
+        By: sorter,
+    }
+    sort.Sort(intervals)
+
+    // 选择End最小的，然后排除掉区间包含End的元素。重复这个过程
+    for i := 0; i < len(input); {
+        fmt.Printn(intervals.Data[i])
+        j := i + 1
+        for ; j < len(input); j++ {
+            if intervals.Data[j].Start < intervals.Data[i].End && intervals.Data[j].End > intervals.Data[i].End {
+                continue
+            }
+            break
+        }
+        i = j
+    }
 }
 
 input := []Interval{{1,5},{2,4},{3,5},{8,10},{5,9},{6,8}}
 IntervalCover(input)
 ```
 
-
-
-
-
 ## 霍夫曼编码
 
 霍夫曼编码不仅会考察文本中有多少个不同字符，还会考察每个字符出现的频率，根据频率的不同，选择不同长度的编码。
-
-
 
 假设有一个包含1000个字符的文件，每个字符占1个byte（1byte=8bits），存储这1000个字符就一共需要8000bits。
 
@@ -138,13 +122,11 @@ IntervalCover(input)
 
 通过进一步分析每个字符的出现频率，我们可以将出现频率高的字符编码为位数尽可能少的，出现频率低的则位数长。由于每个字符的编码长度不同，为了防止解压缩过程的歧义，要求各个字符的编码之间，不会出现某个编码是另一个编码前缀的情况。
 
-![1583455255121](tan-xin-suan-fa.assets/1583455255121.png)
+![1583455255121](../.gitbook/assets/1583455255121.png)
 
 经过这种编码压缩之后，这1000个字符只需要2100bits就可以了。
 
 解压缩的时候，我们每次会读取尽可能长的可解压的二进制串，所以在解压缩的时候也不会歧义。
-
-
 
 ### 编码
 
@@ -152,15 +134,11 @@ IntervalCover(input)
 
 因此，我们可以将每个字符看作一个节点，使用优先级队列存储（根据频率从低到高）。从队列中取出频率最小的两个节点A、B，然后新建一个节点C，把频率设置为两个节点的频率之和，并把这个新节点C作为节点A、B的父节点。最后再把C节点放入到优先级队列中。重复这个过程，直到队列中没有数据。
 
-![1583455622749](tan-xin-suan-fa.assets/1583455622749.png)
+![1583455622749](../.gitbook/assets/1583455622749.png)
 
 然后将二叉树指向左右子树的边赋值为0、1，从根节点到每个叶子节点的路径就是该字符的编码了。
 
-![1583455683736](tan-xin-suan-fa.assets/1583455683736.png)
-
-
-
-
+![1583455683736](../.gitbook/assets/1583455683736.png)
 
 ## 移除数字
 
@@ -168,14 +146,12 @@ IntervalCover(input)
 
 由最高位开始，和低一位数字进行比较，
 
-- 如高位大，移除高位
-- 若高位小，则向右移一位继续比较两个数字，直到高位大于低位则移除，
+* 如高位大，移除高位
+* 若高位小，则向右移一位继续比较两个数字，直到高位大于低位则移除，
 
 循环k次。
 
 例如4556847594546，移除5位。
 
 4556847594546-》455647594546-》45547594546-》4547594546-》4447594546-》444594546
-
-
 
