@@ -354,12 +354,15 @@ func(this Graph) Dijkstra(a, b int) {
     inqueue[a] = true
 
     for len(queue) > 1 { // 下标0处不存储
-        minVertex := queue[0] // 取 距离已选顶点 最近的顶点
-        queue = queue[1:]
+        minVertex := queue[1] // 取 距离已选顶点 最近的顶点
         if minVertex.Id == b {
             break
         }
-
+		// 删除元素后需要堆化
+        queue[1] = queue[len(queue) - 1]
+        queue = queue[:len(queue) - 1]
+        heapify2(queue)
+        
         // 取出每一条与当前顶点相连的边，计算使用当前顶点作为中继的距离
         for i := 0; i < len(this.Adj[minVertex.Id]); i++ {
             edge := this.Adj[minVertex.Id][i] 
@@ -373,7 +376,7 @@ func(this Graph) Dijkstra(a, b int) {
                     heapify(queue)
                     inqueue[edge.Eid] = true
                 } else {
-                    update(queue, edge.Eid)
+                    update(queue, edge.Eid, vertexs[edge.Eid].Dist)
                 }
             }
         }
@@ -382,6 +385,7 @@ func(this Graph) Dijkstra(a, b int) {
     print(a, b, predecessor)
 }
 
+// 从下往上堆化
 func heapify(queue []Vertex) {
     i := len(queue) - 1
     for i > 1 && queue[i].Dist < queue[i/2].Dist {
@@ -390,8 +394,30 @@ func heapify(queue []Vertex) {
     }
 }
 
+// 从上往下堆化
+func heapify2(queue []Vertex) {
+	i := 1
+	size := len(queue)
+	for {
+		min := i
+		if 2*i < size && queue[i].Dist > queue[i*2].Dist {
+			min = i * 2
+		}
+		if 2*i+1 < size && queue[min].Dist > queue[i*2+1].Dist {
+			min = i * 2 + 1
+		}
+
+
+		if min == i {
+			return
+		}
+		queue[i], queue[min] = queue[min], queue[i]
+		i = min
+	}
+}
+
 // 更新Id位id的顶点，因为每次更新后，该顶点的dist肯定是减少的，所以从下往上堆化即可
-func update(queue []Vertex, id int) {
+func update(queue []Vertex, id, newDist int) {
     var pos int
     for i := 1; i < len(queue); i++ {
         if queue[i].Id == id {
@@ -399,7 +425,8 @@ func update(queue []Vertex, id int) {
             break
         }
     }
-
+    
+	queue[pos].Dist = newDist
     for pos > 1 && queue[pos].Dist < queue[pos/2].Dist {
         queue[pos], queue[pos/2] = queue[pos/2], queue[pos]
         pos /= 2
