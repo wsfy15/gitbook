@@ -168,7 +168,7 @@ func(this *Graph) recurDFS(a, b int, visited []bool, prev []int) {
 
 编译器通过分析源文件或者程序员事先写好的编译配置文件（比如Makefile文件），来获取这种局部的依赖关系。那编译器又该如何通过源文件两两之间的局部依赖关系，确定一个全局的编译顺序呢？
 
-![1583550632854](../.gitbook/assets/1583550632854.png)
+![1583550632854](https://github.com/wsfy15/gitbook/tree/b4dfe2e173ac773440ec6c21eaddc824e1fc4dae/.gitbook/assets/1583550632854.png)
 
 这个问题的解决思路与图的拓扑排序相关，什么是拓扑排序呢？
 
@@ -178,7 +178,7 @@ func(this *Graph) recurDFS(a, b int, visited []bool, prev []int) {
 
 这就是个拓扑排序问题。在很多时候，**拓扑排序的序列并不是唯一的**。
 
-![1583550740165](../.gitbook/assets/1583550740165.png)
+![1583550740165](https://github.com/wsfy15/gitbook/tree/b4dfe2e173ac773440ec6c21eaddc824e1fc4dae/.gitbook/assets/1583550740165.png)
 
 ### 实现
 
@@ -358,11 +358,11 @@ func(this Graph) Dijkstra(a, b int) {
         if minVertex.Id == b {
             break
         }
-		// 删除元素后需要堆化
+        // 删除元素后需要堆化
         queue[1] = queue[len(queue) - 1]
         queue = queue[:len(queue) - 1]
         heapify2(queue)
-        
+
         // 取出每一条与当前顶点相连的边，计算使用当前顶点作为中继的距离
         for i := 0; i < len(this.Adj[minVertex.Id]); i++ {
             edge := this.Adj[minVertex.Id][i] 
@@ -396,24 +396,24 @@ func heapify(queue []Vertex) {
 
 // 从上往下堆化
 func heapify2(queue []Vertex) {
-	i := 1
-	size := len(queue)
-	for {
-		min := i
-		if 2*i < size && queue[i].Dist > queue[i*2].Dist {
-			min = i * 2
-		}
-		if 2*i+1 < size && queue[min].Dist > queue[i*2+1].Dist {
-			min = i * 2 + 1
-		}
+    i := 1
+    size := len(queue)
+    for {
+        min := i
+        if 2*i < size && queue[i].Dist > queue[i*2].Dist {
+            min = i * 2
+        }
+        if 2*i+1 < size && queue[min].Dist > queue[i*2+1].Dist {
+            min = i * 2 + 1
+        }
 
 
-		if min == i {
-			return
-		}
-		queue[i], queue[min] = queue[min], queue[i]
-		i = min
-	}
+        if min == i {
+            return
+        }
+        queue[i], queue[min] = queue[min], queue[i]
+        i = min
+    }
 }
 
 // 更新Id位id的顶点，因为每次更新后，该顶点的dist肯定是减少的，所以从下往上堆化即可
@@ -425,8 +425,8 @@ func update(queue []Vertex, id, newDist int) {
             break
         }
     }
-    
-	queue[pos].Dist = newDist
+
+    queue[pos].Dist = newDist
     for pos > 1 && queue[pos].Dist < queue[pos/2].Dist {
         queue[pos], queue[pos/2] = queue[pos/2], queue[pos]
         pos /= 2
@@ -443,7 +443,7 @@ func print(a, b int, predecessor []int) {
 }
 ```
 
-![1583585574871](../.gitbook/assets/1583585574871.png)
+![1583585574871](https://github.com/wsfy15/gitbook/tree/b4dfe2e173ac773440ec6c21eaddc824e1fc4dae/.gitbook/assets/1583585574871.png)
 
 从理论上讲，用Dijkstra算法可以计算出两点之间的最短路径。但是，对于一个超级大地图来说，岔路口、道路都非常多，对应到图这种数据结构上来说，就有非常多的顶点和边。如果为了计算两点之间的最短路径，在一个超级大图上动用Dijkstra算法，遍历所有的顶点和边，显然会非常耗时。
 
@@ -461,7 +461,7 @@ func print(a, b int, predecessor []int) {
 
 假设有一个翻译系统，只能针对单个词来做翻译。如果要翻译一整个句子，我们需要将句子拆成一个一个的单词，再丢给翻译系统。针对每个单词，翻译系统会返回一组可选的翻译列表，并且针对每个翻译打一个分，表示这个翻译的可信程度。
 
-![1583588530665](../.gitbook/assets/1583588530665.png)
+![1583588530665](https://github.com/wsfy15/gitbook/tree/b4dfe2e173ac773440ec6c21eaddc824e1fc4dae/.gitbook/assets/1583588530665.png)
 
 针对每个单词，我们从可选列表中，选择其中一个翻译，组合起来就是整个句子的翻译。每个单词的翻译的得分之和，就是整个句子的翻译得分。随意搭配单词的翻译，会得到一个句子的不同翻译。针对整个句子，我们希望计算出得分最高的前k个翻译结果。
 
@@ -471,11 +471,11 @@ func print(a, b int, predecessor []int) {
 
 借助Dijkstra算法的核心思想，我们每次从优先级队列中取出一个得分最高的组合，并基于这个组合进行扩展。扩展的策略是每个单词的翻译分别替换成该单词的下一个翻译。比如$a_{0}b_{0}c_{0}$扩展后，会得到三个组合，$a_{1}b_{0}c_{0}$、$a_{0}b_{1}c_{0}$、$a_{0}b_{0}c_{1}$。我们把扩展之后的组合，加到优先级队列中。重复这个过程，直到获取到k个翻译组合或者队列为空。
 
-![1583588802407](../.gitbook/assets/1583588802407.png)
+![1583588802407](https://github.com/wsfy15/gitbook/tree/b4dfe2e173ac773440ec6c21eaddc824e1fc4dae/.gitbook/assets/1583588802407.png)
 
-假设句子包含`n`个单词，每个单词平均有`m`个可选的翻译，我们求得分最高的前`k`个组合结果。每次一个组合出队列，就对应着一个组合结果，我们希望得到`k`个，那就对应着`k`次出队操作。每次有一个组合出队列，就有`n`个组合入队列。优先级队列中出队和入队操作的时间复杂度都是$O\(logX\)$，X表示队列中的组合个数。所以，总的时间复杂度就是$O\(k_n_logX\)$。
+假设句子包含`n`个单词，每个单词平均有`m`个可选的翻译，我们求得分最高的前`k`个组合结果。每次一个组合出队列，就对应着一个组合结果，我们希望得到`k`个，那就对应着`k`次出队操作。每次有一个组合出队列，就有`n`个组合入队列。优先级队列中出队和入队操作的时间复杂度都是$O\(logX\)$，X表示队列中的组合个数。所以，总的时间复杂度就是$O\(k\_n\_logX\)$。
 
-`k`次出入队列，队列中的总数据不会超过`kn`，也就是说，出队、入队操作的时间复杂度是$O\(log\(k_n\)\)$。所以，总的时间复杂度就是$O\(k_n_log\(k_n\)\)$，比之前的指数级时间复杂度降低了很多。
+`k`次出入队列，队列中的总数据不会超过`kn`，也就是说，出队、入队操作的时间复杂度是$O\(log\(k\_n\)\)$。所以，总的时间复杂度就是$O\(k\_n\_log\(k\_n\)\)$，比之前的指数级时间复杂度降低了很多。
 
 ### Floyd算法
 

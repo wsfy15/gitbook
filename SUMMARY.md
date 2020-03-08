@@ -42,6 +42,7 @@
     * [二叉搜索树](suan-fa-yu-shu-ju-jie-gou/shu/er-cha-sou-suo-shu.md)
     * [平衡二叉搜索树](suan-fa-yu-shu-ju-jie-gou/shu/ping-heng-er-cha-shu.md)
     * [递归树](suan-fa-yu-shu-ju-jie-gou/shu/di-gui-shu.md)
+    * [Bmore树](suan-fa-yu-shu-ju-jie-gou/shu/bmore-shu.md)
   * [排序](suan-fa-yu-shu-ju-jie-gou/pai-xu.md)
   * [二分查找](suan-fa-yu-shu-ju-jie-gou/er-fen-cha-zhao.md)
   * [贪心算法](suan-fa-yu-shu-ju-jie-gou/tan-xin-suan-fa.md)
