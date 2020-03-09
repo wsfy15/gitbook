@@ -477,6 +477,133 @@ func print(a, b int, predecessor []int) {
 
 `k`次出入队列，队列中的总数据不会超过`kn`，也就是说，出队、入队操作的时间复杂度是$O\(log\(k\_n\)\)$。所以，总的时间复杂度就是$O\(k\_n\_log\(k\_n\)\)$，比之前的指数级时间复杂度降低了很多。
 
+
+
+### A*算法
+
+Dijkstra算法每次都找距离最短的顶点，有可能从起点到该顶点的方向与从起点到终点的方向相反。而A\*算法会综合考虑当前距离起点最近的顶点 和 新顶点与终点的大概距离。
+
+以游戏中的自动寻路功能为例，人物的起点就是他当下所在的位置，终点就是鼠标点击的位置。我们需要在地图中，找一条从起点到终点的路径。这条路径要绕过地图中所有障碍物，并且看起来要是一种非常聪明的走法。所谓“聪明”，笼统地解释就是，走的路不能太绕。理论上讲，最短路径显然是最聪明的走法，是这个问题的最优解。
+
+但是求解最短路径，对于比较大的地图，使用Dijkstra算法效率太低。实际上，像出行路线规划、游戏寻路，这些真实软件开发中的问题，一般情况下，我们都不需要非得求最优解（也就是最短路径）。在**权衡路线规划质量和执行效率**的情况下，我们只需要寻求一个次优解就足够了。
+
+Dijkstra算法有点儿类似BFS算法，它每次找到跟起点最近的顶点，往外扩展。这种往外扩展的思路，其实有些盲目。以下图为例，每个顶点在地图中的位置，我们用一个二维坐标`（x，y）`来表示。
+
+![1583673344946](tu.assets/1583673344946.png)
+
+在Dijkstra算法的实现思路中，我们用一个优先级队列，来记录**已经遍历到的顶点以及这个顶点与起点的路径长度**。顶点与起点路径长度越小，就越先被从优先级队列中取出来扩展，上图中，尽管我们找的是从s到t的路线，但是最先被搜索到的顶点依次是1，2，3。这个搜索方向跟我们期望的路线方向（s到t是从西向东）是反着的，路线搜索的方向明显“跑偏”了。
+
+之所以会“跑偏”，是因为我们只考虑了顶点与起点的路径长度的大小，与起点越近的顶点，就会越早出队列。并没有考虑到这个顶点到终点的距离，所以，在地图中，尽管1，2，3三个顶点离起始顶点最近，但离终点却越来越远。
+
+而A\*算法解决这种盲目的方法，就是引入了待考察顶点与终点的距离。这个距离，可以是欧几里得距离，也可以是曼哈顿距离（两点之间横纵坐标的距离之和，实际使用该距离，因为计算简单）。
+
+当我们遍历到某个顶点的时候，从起点走到这个顶点的路径长度是确定的，我们记作`g(i)`（i是这个顶点的编号，下同）。
+
+然后使用曼哈顿距离估计这个顶点跟终点之间的大概距离，把这个距离记作`h(i)`。
+
+原来只是单纯地通过顶点与起点之间的路径长度`g(i)`，来判断谁先出队列，现在有了顶点到终点的路径长度估计值，我们通过两者之和`f(i)=g(i)+h(i)`，来判断哪个顶点该最先出队列。`f(i)`的专业叫法是估价函数（evaluation function）。
+
+
+
+#### 实现
+
+使用的数据结构与Dijkstra算法中的相同，除了`Vertex`需要加入横纵坐标 和 堆化时根据每个顶点的`F`值进行判断。
+
+```
+type Vertex struct {
+    Id int // 顶点编号
+    Dist int // 从起点到该点距离
+    X, Y int // 横纵坐标
+    F int // F = Dist + g
+}
+
+func NewVertex(id, dist, x, y int) Vertex {
+    return Vertex{
+        Id: id,
+        Dist: dist,
+        X: x,
+        Y: y,
+    }    
+}
+
+func hManhattan(Vertex v1, Vertex v2) int { // Vertex表示顶点，后面有定义
+ return int(math.Abs(float64(v1.X - v2.X)) + math.Abs(float64(v1.Y - v2.Y)));
+}
+```
+
+A\*算法的代码实现的主要逻辑是跟Dijkstra算法的代码实现，主要有3点区别：
+
+- **优先级队列构建的方式不同**。A\*算法是根据`f`值来构建优先级队列，而Dijkstra算法是根据dist值来构建优先级队列
+- A\*算法在更新顶点dist值的时候，会同步更新`f`值
+- **循环结束的条件也不一样**。Dijkstra算法是在终点出队列的时候才结束，A\*算法是一旦遍历到终点就结束
+
+```
+func(this *Graph) AStar(a, b int) {
+ 	predecessor := make([]int, this.Count)
+    vertexs := make([]Vertex, this.Count) // 记录从起始顶点到每个顶点的距离
+    for i := range vertexs {
+        vertexs[i] = NewVertex(i, math.MaxInt32, x, y) // 初始化距离无限大
+    }
+
+    queue := make([]Vertex, 1) // 优先级队列，最小堆
+    vertexs[a].Dist = 0
+    vertexs[a].F = 0
+    queue = append(queue, vertexs[a])
+    inqueue := make([]bool, this.Count) // 记录是否已经在最小堆中
+    inqueue[a] = true
+
+    for len(queue) > 1 { // 下标0处不存储
+        minVertex := queue[1] // 取 距离已选顶点 最近的顶点
+        // 删除元素后需要堆化
+        queue[1] = queue[len(queue) - 1]
+        queue = queue[:len(queue) - 1]
+        heapify2(queue)
+
+        // 取出每一条与当前顶点相连的边，计算使用当前顶点作为中继的距离
+        for i := 0; i < len(this.Adj[minVertex.Id]); i++ {
+            edge := this.Adj[minVertex.Id][i] 
+            oldDist := vertexs[edge.Eid].Dist
+            if minVertex.Dist + edge.Weight < oldDist {
+                vertexs[edge.Eid].Dist = minVertex.Dist + edge.Weight
+                vertexs[edge.Eid].F = vertexs[edge.Eid].Dist + hManhattan(vertexs[edge.Eid], vertexes[b])
+                predecessor[edge.Eid] = minVertex.Id
+                if inqueue[edge.Eid] == false {
+                    //从下往上堆化
+                    queue = append(queue, vertexs[edge.Eid])
+                    heapify(queue)
+                    inqueue[edge.Eid] = true
+                } else {
+                    update(queue, edge.Eid, vertexs[edge.Eid].Dist)
+                }
+            }
+            
+            if edge.Eid == b {
+            	break // 只要到达终点b即可，不必是最优解
+            }
+        }
+    }
+
+    print(a, b, predecessor)
+}
+```
+
+尽管A\*算法可以更加快速的找到从起点到终点的路线，但它找到的不一定是最短路线。要找出起点a到终点b的最短路径，最简单的方法是，通过回溯穷举所有从a到达b的不同路径，然后对比找出最短的那个。不过很显然，回溯算法的执行效率非常低，是指数级的。
+
+![1583675118960](tu.assets/1583675118960.png)
+
+Dijkstra算法在此基础之上，利用动态规划的思想，对回溯搜索进行了剪枝，只保留起点到某个顶点的最短路径，继续往外扩展搜索。动态规划相较于回溯搜索，只是换了一个实现思路，但它实际上也考察到了所有从起点到终点的路线，所以才能得到最优解。
+
+![1583675145120](tu.assets/1583675145120.png)
+
+A\*算法之所以不能像Dijkstra算法那样，找到最短路径，主要原因是两者的while循环结束条件不一样。
+
+- Dijkstra算法是在终点出队列的时候才结束，这时候终点的`dist`值是优先级队列中所有顶点的最小值，即便再运行下去，终点的`dist`值也不会再被更新了。
+- A\*算法是一旦遍历到终点就结束while循环，这个时候，终点的`dist`值未必是最小值。
+
+A\*算法利用贪心算法的思路，每次都找`f`值最小的顶点出队列，一旦搜索到终点就不在继续考察其他顶点和路线了。所以，它并没有考察所有的路线，也就不一定能找出最短路径了。
+
+
+
 ### Floyd算法
 
 求图中顶点两两间的最短距离。
