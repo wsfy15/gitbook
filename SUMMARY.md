@@ -50,6 +50,8 @@
   * [回溯算法](suan-fa-yu-shu-ju-jie-gou/hui-su-suan-fa.md)
   * [动态规划](suan-fa-yu-shu-ju-jie-gou/dong-tai-gui-hua.md)
   * [散列表与哈希算法](suan-fa-yu-shu-ju-jie-gou/ha-xi-biao-yu-san-lie.md)
+  * [索引](suan-fa-yu-shu-ju-jie-gou/suo-yin.md)
+  * [并行](suan-fa-yu-shu-ju-jie-gou/bing-hang.md)
 * [法律小知识](fa-lv-xiao-zhi-shi/README.md)
   * [常识](fa-lv-xiao-zhi-shi/chang-shi.md)
   * [劳动合同](fa-lv-xiao-zhi-shi/lao-dong-he-tong.md)
