@@ -18,81 +18,79 @@ Disruptor是**线程之间**用于消息传递的队列，它比Java中另外一
 
 **非循环的顺序队列**在添加、删除数据的工程中，会涉及数据的搬移操作，导致性能变差。而**循环队列**正好可以解决这个数据搬移的问题，所以，性能更加好。所以，大部分用到顺序队列的场景中，我们都选择用顺序队列中的循环队列。
 
-```
+```text
 type Queue struct {
-	data []int
-	size int
-	head int
-	tail int
+    data []int
+    size int
+    head int
+    tail int
 }
 
 func NewQueue(size int) *Queue {
-	return &Queue{
-		size: size,
-		head: 0,
-		tail: 0,
-		data: make([]int, size),
-	}
+    return &Queue{
+        size: size,
+        head: 0,
+        tail: 0,
+        data: make([]int, size),
+    }
 }
 
 func(this Queue) Add(element int) bool {
-	if (this.tail + 1) % this.size == head {
-		return false
-	}
-	this.data[this.tail] = element
-	this.tail = (this.tail + 1) % this.size
-	return true
+    if (this.tail + 1) % this.size == head {
+        return false
+    }
+    this.data[this.tail] = element
+    this.tail = (this.tail + 1) % this.size
+    return true
 }
 
 func(this Queue) Poll() int, err {
-	if head == tail {
-		return 0, err.New("empty queue")
-	}
-	
-	data := this.data[this.head]
-	this.head = (this.head + 1) % this.size
-	return data, nil
+    if head == tail {
+        return 0, err.New("empty queue")
+    }
+
+    data := this.data[this.head]
+    this.head = (this.head + 1) % this.size
+    return data, nil
 }
 
 type Producer struct {
-	queue *Queue
+    queue *Queue
 }
 
 func NewProducer(queue *Queue) *Producer {
-	return &Producer {
-		queue: queue,
-	}
+    return &Producer {
+        queue: queue,
+    }
 }
 
 func(this *Producer) Produce(data int) {
-	for !this.queue.Add(data) {
-		time.Sleep(time.Second)
-	}
+    for !this.queue.Add(data) {
+        time.Sleep(time.Second)
+    }
 } 
 
 type Consumer struct {
-	queue *Queue
+    queue *Queue
 }
 
 func NewConsumer(queue *Queue) *Consumer {
-	return &Consumer {
-		queue: queue,
-	}
+    return &Consumer {
+        queue: queue,
+    }
 }
 
 func(this *Consumer) Consume(data int) {
     for {
-		data, err := this.queue.Poll()
-		if err != nil {
-			time.Sleep(time.Second)
-		} else {
-			// 处理业务
-		}
+        data, err := this.queue.Poll()
+        if err != nil {
+            time.Sleep(time.Second)
+        } else {
+            // 处理业务
+        }
     }
-} 
+}
 ```
-
-
 
 ### 基于加锁的并发“生产者-消费者模型”
 
@@ -100,21 +98,21 @@ func(this *Consumer) Consume(data int) {
 
 当有多个生产者在**并发地**往队列中写入数据，或者多个消费者并发地从队列中消费数据，可能会有下面两个问题：
 
-- 多个生产者写入的数据可能会互相覆盖
-- 多个消费者可能会读取重复的数据
+* 多个生产者写入的数据可能会互相覆盖
+* 多个消费者可能会读取重复的数据
 
 这两个问题的原理是一样的，以第一个问题为例，两个线程同时往队列中添加数据，也就相当于两个线程同时执行类`Queue`中的`Add()`函数。我们假设队列的大小`size`是10，当前的`tail`指向下标7，`head`指向下标3，也就是说，队列中还有空闲空间。这个时候，线程1调用`Add()`函数，往队列中添加一个值为12的数据；线程2调用`Add()`函数，往队列中添加一个值为15的数据。在极端情况下，本来是往队列中添加了两个数据（12和15），**最终可能只有一个数据添加成功，另一个数据会被覆盖。**
 
-![1584109390883](gao-xing-neng-dui-lie.assets/1584109390883.png)
+![1584109390883](../../.gitbook/assets/1584109390883.png)
 
-```
+```text
 func(this Queue) Add(element int) bool {
-	if (this.tail + 1) % this.size == head {
-		return false
-	}
-	this.data[this.tail] = element
-	this.tail = (this.tail + 1) % this.size
-	return true
+    if (this.tail + 1) % this.size == head {
+        return false
+    }
+    this.data[this.tail] = element
+    this.tail = (this.tail + 1) % this.size
+    return true
 }
 ```
 
@@ -122,15 +120,13 @@ func(this Queue) Add(element int) bool {
 
 当线程1和线程2同时执行`Add()`函数的时候，线程1先执行完了第5行语句，将`data[7]`（`tail`等于7）的值设置为12。在线程1还未将`tail`加一之前，线程2执行了第5行语句，又将`data[7]`的值设置为15，也就是说，那线程2插入的数据覆盖了线程1插入的数据。原本应该插入两个数据（12和15）的，现在只插入了一个数据（15）。
 
-![1584109590704](gao-xing-neng-dui-lie.assets/1584109590704.png)
+![1584109590704](../../.gitbook/assets/1584109590704.png)
 
-![1584109625678](gao-xing-neng-dui-lie.assets/1584109625678.png)
+![1584109625678](../../.gitbook/assets/1584109625678.png)
 
 这个问题最简单的处理方法就是给这段代码加锁，同一时间只允许一个线程执行`Add()`函数。这就相当于将这段代码的执行，由并行改成了串行，这会导致多个生产者同时生产数据的时候，执行效率的下降。
 
 也可以用[CAS](https://en.wikipedia.org/wiki/Compare-and-swap)（compare and swap，比较并交换）操作减少加锁的粒度。
-
-
 
 ### 基于无锁的并发“生产者-消费者模型”
 
@@ -142,6 +138,7 @@ func(this Queue) Add(element int) bool {
 
 不过，还有一个需要特别注意的地方，那就是，如果生产者A申请到了一组连续的存储单元，假设是下标为3到6的存储单元，生产者B紧跟着申请到了下标是7到9的存储单元，那在3到6没有完全写入数据之前，7到9的数据是无法读取的。这个也是Disruptor实现思路的一个弊端。
 
-![](gao-xing-neng-dui-lie.assets/20200119201520976493.png)
+![](../../.gitbook/assets/20200119201520976493.png)
 
 实际上，Disruptor采用的是`RingBuffer`和`AvailableBuffer`这两个结构。
+

@@ -45,6 +45,7 @@
     * [Bmore树](suan-fa-yu-shu-ju-jie-gou/shu/bmore-shu.md)
   * [排序](suan-fa-yu-shu-ju-jie-gou/pai-xu.md)
   * [二分查找](suan-fa-yu-shu-ju-jie-gou/er-fen-cha-zhao.md)
+  * [位运算](suan-fa-yu-shu-ju-jie-gou/wei-yun-suan.md)
   * [贪心算法](suan-fa-yu-shu-ju-jie-gou/tan-xin-suan-fa.md)
   * [分治算法](suan-fa-yu-shu-ju-jie-gou/fen-zhi-suan-fa.md)
   * [回溯算法](suan-fa-yu-shu-ju-jie-gou/hui-su-suan-fa.md)
