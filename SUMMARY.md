@@ -38,6 +38,7 @@
   * [字符串](suan-fa-yu-shu-ju-jie-gou/zi-fu-chuan.md)
   * [链表、栈、队列](suan-fa-yu-shu-ju-jie-gou/lian-biao-zhan-dui-lie.md)
   * [位图 布隆过滤器](suan-fa-yu-shu-ju-jie-gou/wei-tu-bu-long-guo-lv-qi.md)
+  * [并查集](suan-fa-yu-shu-ju-jie-gou/bing-cha-ji.md)
   * [树](suan-fa-yu-shu-ju-jie-gou/shu/README.md)
     * [二叉搜索树](suan-fa-yu-shu-ju-jie-gou/shu/er-cha-sou-suo-shu.md)
     * [平衡二叉搜索树](suan-fa-yu-shu-ju-jie-gou/shu/ping-heng-er-cha-shu.md)
