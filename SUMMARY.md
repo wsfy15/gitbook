@@ -13,6 +13,7 @@
   * [1月](2020/1-yue.md)
 * [golang心得](golang-xin-de/README.md)
   * [interface](golang-xin-de/interface.md)
+  * [一些技巧](golang-xin-de/yi-xie-ji-qiao.md)
 * [数学](shu-xue/README.md)
   * [二进制](shu-xue/er-jin-zhi.md)
   * [动态规划](shu-xue/dong-tai-gui-hua.md)
