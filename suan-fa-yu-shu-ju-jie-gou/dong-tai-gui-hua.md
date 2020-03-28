@@ -10,7 +10,7 @@
 
 假设背包的最大承载重量是9。有5个不同的物品，每个物品的重量分别是2，2，4，6，3。用递归树展示这个例子的回溯求解过程（`f(i, j)`：i表示第i个物品，j表示当前背包重量）：
 
-![1583847670164](../.gitbook/assets/1583847670164.png)
+![1583847670164](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583847670164.png)
 
 连接左右子树的边分别表示是否将第i个物品装入背包。比如，`(2, 2)`表示我们将要决策第2个物品是否装入背包，在决策前，背包中物品的总重量是2。
 
@@ -54,9 +54,9 @@ func f(i, cw int) { // f(0, 0)
 
 以此类推，直到考察完所有的物品后，整个`states`状态数组就都计算好了。下图中0表示false，1表示true。
 
-![1583849649932](../.gitbook/assets/1583849649932.png)
+![1583849649932](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583849649932.png)
 
-![1583849662115](../.gitbook/assets/1583849662115.png)
+![1583849662115](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583849662115.png)
 
 我们只需要在最后一层，找一个值为true的最接近w（这里是9）的值，就是背包中物品总重量的最大值。
 
@@ -170,7 +170,7 @@ func f(i, cw, cv int) { // f(0, 0, 0)
 
 上面的回溯代码的递归树如下：
 
-![1583904410547](../.gitbook/assets/1583904410547.png)
+![1583904410547](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583904410547.png)
 
 在递归树中，有几个节点的`i`和`cw`是完全相同的，比如`f(2,2,4)`和`f(2,2,3)`。在背包中物品总重量一样的情况下，`f(2,2,4)`这种状态对应的物品总价值更大，我们可以舍弃`f(2,2,3)`这种状态，只需要沿着`f(2,2,4)`这条决策路线继续往下决策就可以。
 
@@ -260,11 +260,11 @@ func knapsack3(weight, value []int, n, w int) int {
 
 假设我们有一个`n X n`的矩阵`w[n][n]`。矩阵存储的都是正整数。棋子起始位置在左上角，终止位置在右下角。我们将棋子从左上角移动到右下角。每次只能向右或者向下移动一位。从左上角到右下角，会有很多不同的路径可以走。把每条路径经过的数字加起来看作路径的长度。那从左上角移动到右下角的**最短路径**长度是多少呢？
 
-![1583931106588](../.gitbook/assets/1583931106588.png)
+![1583931106588](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583931106588.png)
 
 从`(0, 0)`走到`(n-1, n-1)`，总共要走`2*(n-1)`步，也就对应着`2*(n-1)`个阶段。**每个阶段都有向右走或者向下走两种决策，并且每个阶段都会对应一个状态集合。**
 
-![1583931261376](../.gitbook/assets/1583931261376.png)
+![1583931261376](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583931261376.png)
 
 把状态定义为`min_dist(i, j)`，其中i表示行，j表示列。`min_dist`表达式的值表示从`(0, 0)`到达`(i, j)`的最短路径长度。所以，这个问题是一个多阶段决策最优解问题，符合动态规划的模型。
 
@@ -310,7 +310,7 @@ func minDistBT(n, i, j, dist int, w [][]int) { // minDistBT(n, 0, 0, 0, w)
 }
 ```
 
-![1583932062986](../.gitbook/assets/1583932062986.png)
+![1583932062986](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583932062986.png)
 
 在递归树中，一个状态（也就是一个节点）包含三个变量`(i, j, dist)`，其中`i，j`分别表示行和列，`dist`表示从起点到达`(i, j)`的路径长度。从图中可以发现，尽管`(i, j, dist)`不存在重复的，但是`(i, j)`重复的有很多。**对于`(i, j)`重复的节点，我们只需要选择`dist`最小的节点**，继续递归求解，其他节点就可以舍弃了。
 
@@ -318,9 +318,9 @@ func minDistBT(n, i, j, dist int, w [][]int) { // minDistBT(n, 0, 0, 0, w)
 
 先画出一个二维状态表，表中的行、列表示棋子所在的位置，表中的数值表示**从起点到这个位置的最短路径**。我们按照决策过程，通过不断状态递推演进，将状态表填好，下面按行填写。
 
-![1583935255062](../.gitbook/assets/1583935255062.png)
+![1583935255062](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583935255062.png)
 
-![1583935272352](../.gitbook/assets/1583935272352.png)
+![1583935272352](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583935272352.png)
 
 ```text
 func minDistDP(matrix [][]int, n int) int {
@@ -451,7 +451,7 @@ func f(values []int, w int) int {
 
 莱文斯坦距离和最长公共子串长度，从两个截然相反的角度，分析字符串的相似程度。莱文斯坦距离的大小，表示两个字符串差异的大小；而最长公共子串的大小，表示两个字符串相似程度的大小。
 
-![1583976280508](../.gitbook/assets/1583976280508.png)
+![1583976280508](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583976280508.png)
 
 ### 莱文斯坦距离
 
@@ -495,7 +495,7 @@ func lwstBT(i, j, dist int) {
 }
 ```
 
-![1583978308997](../.gitbook/assets/1583978308997.png)
+![1583978308997](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583978308997.png)
 
 如果不存在重复子问题，那回溯就是最好的解决方法。
 
@@ -503,7 +503,7 @@ func lwstBT(i, j, dist int) {
 
 在递归树中，`(i, j)`两个变量重复的节点很多，比如`(3, 2)`和`(2, 3)`。**对于`(i, j)`相同的节点，我们只需要保留`edist`最小的**，继续递归处理就可以了，剩下的节点都可以舍弃。所以，状态就从`(i, j, edist)`变成了`(i, j, min_edist)`，其中`min_edist`表示处理到`a[i]`和`b[j]`，已经执行的最少编辑次数。
 
-![1583978771711](../.gitbook/assets/1583978771711.png)
+![1583978771711](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583978771711.png)
 
 基于上述，可以得出状态转移方程：
 
@@ -515,7 +515,7 @@ func lwstBT(i, j, dist int) {
 
   `min(min_edist(i-1, j)+1, min_edist(i, j-1)+1，min_edist(i-1, j-1))`
 
-![1583979050179](../.gitbook/assets/1583979050179.png)
+![1583979050179](https://github.com/wsfy15/gitbook/tree/472386f72bd28b705947f3cb2906b31170b00b9a/.gitbook/assets/1583979050179.png)
 
 ```text
 func lwstDP(a string, b string) int {
