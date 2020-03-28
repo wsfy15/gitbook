@@ -558,13 +558,12 @@ func lwstDP(a string, b string) int {
     return minDist[n-1][m-1]
 }
 
-func min(x, y, z int) int {
-    min := x
-    if y < min {
-        min = y
-    }
-    if z < min {
-        min = z
+func min(x ...int) int {
+    min := int(^uint(0) >> 1) // largest int
+    for _, v := range x {
+        if v < min {
+            min = v
+        }
     }
     return min
 }
