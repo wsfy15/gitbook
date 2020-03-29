@@ -4,45 +4,39 @@
 
 从一个对象再创建另外一个可定制的对象，而且不需知道任何创建的细节。
 
-
-
 ## 实现
 
 定义原型接口：
 
-```
+```text
 type Cloneable interface {
-	Clone() Cloneable
+    Clone() Cloneable
 }
 ```
 
 实现具体原型类：
 
-```
+```text
 type ConcretePrototype struct {...}
 func(this *ConcretePrototype) Clone() Cloneable {
-	cp := *this
-	return &cp
+    cp := *this
+    return &cp
 }
 ```
 
 客户端调用：
 
-```
+```text
 obj := &ConcretePrototype{}
 newObj := obj.Clone()
 if obj == newObj {
-	log.Fatal("clone not working for ConcretePrototype")
+    log.Fatal("clone not working for ConcretePrototype")
 }
 ```
 
-
-
 ## 结构图
 
-![1585454926253](yuan-xing-mo-shi.assets/1585454926253.png)
-
-
+![1585454926253](../../../.gitbook/assets/1585454926253.png)
 
 ## 深拷贝 VS 浅拷贝
 
@@ -50,16 +44,16 @@ if obj == newObj {
 
 深拷贝：
 
-```
+```text
 type ConcretePrototype struct {
-	m map[int]int // 引用类型
+    m map[int]int // 引用类型
 }
 
 func(this *ConcretePrototype) Clone() Cloneable {
-	cp := new(ConcretePrototype)
-	err := deepCopy(cp, this)
-	if err != nil {...}
-	return &cp
+    cp := new(ConcretePrototype)
+    err := deepCopy(cp, this)
+    if err != nil {...}
+    return &cp
 }
 
 func deepCopy(dst, src interface{}) error {

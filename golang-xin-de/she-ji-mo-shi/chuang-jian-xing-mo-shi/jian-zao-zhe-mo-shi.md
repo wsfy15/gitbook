@@ -4,10 +4,10 @@
 
 以构造游戏人物为例，需要头、身体、左手、右手、左脚、右脚。如果直接在一个类的构造函数里面初始化该人物，代码如下：
 
-```
+```text
 type Person struct {...}
 func NewPerson() *Person {
-	p := &Person{}
+    p := &Person{}
     // create head
     // create body
     // create left hand
@@ -26,29 +26,27 @@ func NewPerson() *Person {
 
 该模式包含如下角色：
 
-- Builder：抽象建造者，为创建一个Product对象的各个部件指定抽象接口
-- ConcreteBuilder：具体建造者，实现Builder接口
-- Director：指挥者，控制Builder构造对象
-- Product：产品角色
+* Builder：抽象建造者，为创建一个Product对象的各个部件指定抽象接口
+* ConcreteBuilder：具体建造者，实现Builder接口
+* Director：指挥者，控制Builder构造对象
+* Product：产品角色
 
 **使用时机：**需要创建复杂对象，且这些对象内部构建间的建造顺序通常是稳定的，但对象内部的构建通常面临复杂的变化。
-
-
 
 ## 实现
 
 1. 定义建造者接口：
 
-```
+```text
 type Builder interface {
     BuildPartA()
     BuildPartB()
 }
 ```
 
-2. 具体建造者：
+1. 具体建造者：
 
-```
+```text
 type ConcreteBuilder struct {...}
 
 func(*ConcreteBuilder) BuildPartA() {...}
@@ -56,29 +54,29 @@ func(*ConcreteBuilder) BuildPartB() {...}
 func(*ConcreteBuilder) GetResult() Product {...}
 ```
 
-3. 指挥者：
+1. 指挥者：
 
-```
+```text
 type Director struct {
-	builder Builder
+    builder Builder
 }
 
 func NewDirector(builder Builder) *Director {
-	return &Director{
-		builder: builder,
-	}
+    return &Director{
+        builder: builder,
+    }
 }
 
 // Construct Product
 func (d *Director) Construct() {
-	d.builder.BuildPartA()
-	d.builder.BuildPartB()
+    d.builder.BuildPartA()
+    d.builder.BuildPartB()
 }
 ```
 
 客户端调用：
 
-```
+```text
 builder := &ConcreteBuilder{}
 director := NewDirector(builder)
 director.Construct()
@@ -89,13 +87,7 @@ res := builder.GetResult()
 
 而构建不同的Product，只需要新建一个ConcreteBuilder类即可实现。
 
-
-
 ## 结构图
 
-![1585447974922](jian-zao-zhe-mo-shi.assets/1585447974922.png)
-
-
-
-
+![1585447974922](../../../.gitbook/assets/1585447974922.png)
 

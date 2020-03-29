@@ -10,42 +10,42 @@
 
 1. 首先定义工厂接口
 
-```
+```text
 type Factory interface {
-	CreateOperation() Operation
+    CreateOperation() Operation
 }
 ```
 
-> ```
+> ```text
 > type Operation interface {
-> 	GetResult(numA, numB float64)  float64
+>     GetResult(numA, numB float64)  float64
 > }
 > ```
 
-2. 实现各个具体操作的工厂
+1. 实现各个具体操作的工厂
 
-```
+```text
 type AddFactory struct {
 }
 
 func(*AddFactory) CreateOperation() Operation {
-	return &OperationAdd{}
+    return &OperationAdd{}
 }
 ```
 
-> ```
+> ```text
 > // 具体操作实现类
 > type OperationAdd struct {
 > }
-> 
+>
 > func(*OperationAdd) GetResult(numA, numB float64)  float64 {
-> 	return numA + numB
+>     return numA + numB
 > }
 > ```
 
 ### 客户端调用
 
-```
+```text
 var factory Factory = AddFactory{}
 op := factory.CreateOperation()
 op.GetResult(1.0, 2.0) // 3
@@ -55,11 +55,7 @@ op = factory.CreateOperation()
 op.GetResult(1.0, 2.0) // -1
 ```
 
-
-
-
-
 ## 结构图
 
-![1585396549989](gong-chang-fang-fa-mo-shi.assets/1585396549989.png)
+![1585396549989](../../../.gitbook/assets/1585396549989.png)
 
