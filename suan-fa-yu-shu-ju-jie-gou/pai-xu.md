@@ -50,9 +50,7 @@ func bubbleSort(a []int) {
         for j := 1; j <= n - i - 1; j++ {
             if a[j - 1] > a[j] {
                 flag = true
-                tmp := a[j-1]
-                a[j-1] = a[j]
-                a[j] = tmp
+                a[j], a[j-1] = a[j-1], a[j]
             }
         }
         if !flag {
@@ -235,15 +233,11 @@ func partition(a []int, start, end int) int {
     i := start
     for j := start; j <= end; j++ {
         if a[j] < pivot {
-            tmp := a[i]
-            a[i] = a[j]
-            a[j] = tmp
+        	a[i], a[j] = a[j], a[i]
             i++
         }
     }
-    tmp := a[i]
-    a[i] = pivot
-    a[end] = tmp
+    a[i], a[end] = pivot, a[i]
     return i
 }
 ```
