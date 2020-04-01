@@ -1,6 +1,10 @@
-# interface
+# 接口与反射
+
+变量包括`(type, value)`两部分，`type`包括`static type`和`concrete type`，`static type`是编码时看见的类型（例如`int、string`），`concrete type`是runtime系统看见的类型。
 
 ## interface
+
+每个`interface`变量都有一个`(type, value)`pair，分别表示**实际的类型和实际的值**。一个`interface`变量包含两个指针，一个指向值的类型`concrete type`，一个指向实际的值。
 
 实现了接收者是值类型的方法，相当于自动实现了接收者是指针类型的方法；而实现了接收者是指针类型的方法，不会自动生成对应接收者是值类型的方法。
 
@@ -36,15 +40,15 @@ func main() {
 }
 ```
 
-因为这是 **接收者是指针类型的方法，很可能在方法中会对接收者的属性进行更改操作，从而影响接收者**；**而对于接收者是值类型的方法，在方法中不会对接收者本身产生影响**。所以，当实现了一个接收者是值类型的方法，就可以自动生成一个接收者是对应指针类型的方法，因为两者都不会影响接收者。
+因为 **对于接收者是指针类型的方法，很可能在方法中会对接收者的属性进行更改操作，从而影响接收者**；**而对于接收者是值类型的方法，在方法中不会对接收者本身产生影响**。所以，当实现了一个接收者是值类型的方法，就可以自动生成一个接收者是对应指针类型的方法，因为两者都不会影响接收者。
 
 但是，当实现了一个接收者是指针类型的方法，如果此时自动生成一个接收者是值类型的方法，原本期望对接收者的改变（通过指针实现），现在无法实现，因为值类型会产生一个拷贝，不会真正影响调用者。
 
-语法上 `T` 能直接调 `*T` 的方法仅仅是 `Go` 的语法糖，先取到T的指针再去调用\*T的方法。
+语法上 `T` 能直接调 `*T` 的方法仅仅是 `Go` 的语法糖，先取到`T`的指针再去调用`*T`的方法。
 
 ### iface VS eface
 
-iface包含方法的接口，eface即 `interface{}` 。
+iface包含方法的接口，`eface`即 `interface{}` 。
 
 ```text
 type iface struct {
@@ -74,13 +78,11 @@ type myWriter struct {
     return
 }*/
 
-func main() {
-    // 检查 *myWriter 类型是否实现了 io.Writer 接口
-    var _ io.Writer = (*myWriter)(nil)
+// 检查 *myWriter 类型是否实现了 io.Writer 接口
+var _ io.Writer = (*myWriter)(nil)
 
-    // 检查 myWriter 类型是否实现了 io.Writer 接口
-    var _ io.Writer = myWriter{}
-}
+// 检查 myWriter 类型是否实现了 io.Writer 接口
+var _ io.Writer = myWriter{}
 ```
 
 上述赋值语句会发生隐式地类型转换，在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。
@@ -130,7 +132,7 @@ func main() {
 }
 ```
 
-还可以使用switch判断接口类型
+还可以使用`switch`判断接口类型
 
 ```text
 func judge(v interface{}) {
@@ -167,21 +169,25 @@ type Student struct {
 
 而对于自定义类型，首先确定该类型是否实现了 `String()` 方法（接收者最好为值类型），如果实现了，则直接打印输出 `String()` 方法的结果；否则，会通过反射来遍历对象的成员进行打印。
 
+**类型断言能否成功，取决于变量的`concrete type`，而不是`static type`。** 因此，一个 `reader`变量如果它的`concrete type`也实现了`write`方法的话，它也可以被类型断言为`writer`。
+
 ### 接口转换的原理
 
 当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认为该类型实现了该接口。
 
-例如某类型有 `m` 个方法，某接口有 `n` 个方法，则很容易知道这种判定的时间复杂度为 `O(mn)`，Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 `O(m+n)`。
+例如某类型有 `m` 个方法，某接口有 `n` 个方法，则很容易知道这种判定的时间复杂度为 `O(m*n)`，Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 `O(m+n)`。
 
-1. 具体类型转空接口时，\_type 字段直接复制源类型的 \_type；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。
-2. 具体类型转非空接口时，入参 tab 是编译器在编译阶段预先生成好的，新接口 tab 字段直接指向入参 tab 指向的 itab；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。
-3. 而对于接口转接口，itab 调用 getitab 函数获取。只用生成一次，之后直接从 hash 表中获取。
+1. 具体类型转空接口时，`_type `字段直接复制源类型的 `_type`；调用 `mallocgc `获得一块新内存，把值复制进去，`data `再指向这块新内存。
+2. 具体类型转非空接口时，入参 `tab `是编译器在编译阶段预先生成好的，新接口 `tab `字段直接指向入参 tab 指向的 `itab`；调用 `mallocgc `获得一块新内存，把值复制进去，`data `再指向这块新内存。
+3. 而对于接口转接口，`itab `调用 `getitab `函数获取。只用生成一次，之后直接从 hash 表中获取。
 
 ## reflection
 
+**反射就是用来检测存储在接口变量内部`(value, concrete type) `pair对的一种机制。**
+
 ### 接口的值
 
-接口类型的值包含`(value, type)`对。
+`interface`类型的值包含`(value, type)`对。
 
 ```text
 var r io.Reader
@@ -197,9 +203,19 @@ w = r.(io.Writer)    // w 的 (value, type)对为：(tty, *os.File)
 
 接口的静态类型确定可以使用接口变量调用哪些方法，即使内部的具体值可能具有更大的方法集。
 
-### 从接口值到反射对象
+变量的方法集则蕴含了该变量可以转换为哪些接口。
+
+### 从接口值到反射对象：TypeOf  and  ValueOf
 
 最基础的反射就是从一个接口变量得到其`(value, type)`对，reflect包提供了`reflect.TypeOf` 和`reflect.ValueOf`这两个方法。
+
+> ```
+> ValueOf returns a new Value initialized to the concrete value stored in the interface i. 
+> ValueOf(nil) returns the zero Value.
+> 
+> TypeOf returns the reflection Type that represents the dynamic type of i.
+> If i is a nil interface value, TypeOf returns nil.
+> ```
 
 ```text
 var x float64 = 3.4
@@ -220,7 +236,7 @@ fmt.Println("value:", v.Float())    // value: 3.4
 
 也有`SetInt` 和`SetFloat`之类的方法，但使用前需要确认是否可以使用。
 
-* `Kind`方法描述的是反射对象的底层类型，而不是静态类型
+* `Kind`方法描述的是反射对象的底层类型（`int、string、struct、bool等`），而不是静态类型
 
   ```text
   type MyInt int
@@ -229,7 +245,7 @@ fmt.Println("value:", v.Float())    // value: 3.4
   v.Kind() === reflect.Int    // 虽然x的静态类型是MyInt
   ```
 
-* `getter`和`setter`方法都是在能容纳该值的最大类型上运行。以int64（有符号整数）为例，`reflect.Value`的`Int()`返回int64、`SetInt()`接收一个int64的值（可能会转换为涉及的实际类型）
+* `getter`和`setter`方法都是在能容纳该值的最大类型上运行。以`int64`（有符号整数）为例，`reflect.Value`的`Int()`返回`int64`、`SetInt()`接收一个`int64`的值（可能会转换为涉及的实际类型）
 
   ```text
   var x uint8 = 'x'
@@ -241,23 +257,75 @@ fmt.Println("value:", v.Float())    // value: 3.4
 
 ### 从反射对象到接口值
 
-`reflect.Value` 对象的`Interface` 方法，将type和value信息打包为接口形式的表示并返回，实现从反射对象到接口的转换。
+通过 `reflect.Value` 的 `Interface()` 方法可以将`type`和`value`信息打包为接口形式的表示并返回，以获得接口变量的真实内容，然后可以通过类型判断进行转换，转换为原有真实类型，实现从反射对象到接口的转换。
+
+#### 已知原有类型
 
 ```text
-y := v.Interface().(float64) // y will have type float64.
+var num float64 = 3.4
+
+pointer := reflect.ValueOf(&num)
+value := reflect.ValueOf(num)
+
+convertPointer, ok := pointer.Interface().(*float64) // 要区分是指针还是值
+convertValue, ok := value.Interface().(float64)
 ```
 
 fmt包的`Println`、`Printf`等方法以空接口的形式接收变量，然后通过`reflect.Value`得到这些接口的实际值。因此，如果我们要打印反射对象的实际值，只需要传递该对象的`Interface` 方法的结果：
 
 ```text
-fmt.Println(v.Interface())
-fmt.Printf("value is %7.1e\n", v.Interface()) // 知道是个float64值，格式化输出 // 3.4e+00
+fmt.Println(value.Interface())
+fmt.Printf("value is %7.1e\n", value.Interface()) // 知道是个float64值，格式化输出 // 3.4e+00
 // 不需要类型断言
+```
+
+#### 未知原有类型
+
+可以通过遍历Field进行判断
+
+```
+type User struct {
+	Name string
+	Age int
+}
+
+v := User {
+	Name: "sf",
+	Age: 20,
+}
+
+getType := reflect.TypeOf(v)
+getValue := reflect.ValueOf(v)
+
+// 遍历数据字段
+for i := 0; i < getType.NumField(); i++ {
+	field := getType.Field(i)
+	value := getValue.Field(i).Interface()
+	fmt.Printf("%s: %v = %v\n", field.Name, field.Type, value)
+}
+
+// 遍历方法
+for i := 0; i < getType.NumMethod(); i++ {
+	m := getType.Method(i)
+	fmt.Printf("%s: %v\n", m.Name, m.Type)
+}
+```
+
+如果`v`是指针，就需要先调用`reflect.Indirect`得到指针指向的值。
+
+```
+v := &User {
+	Name: "sf",
+	Age: 20,
+}
+getType := reflect.Indirect(reflect.ValueOf(v)).Type()
+getValue := reflect.Indirect(reflect.ValueOf(v))
+......
 ```
 
 ### 修改反射对象
 
-修改反射对象时，必须使用settable的value。
+修改反射对象时，必须使用`settable`的`value`。
 
 ```text
 var x float64 = 3.4
@@ -266,9 +334,9 @@ v.SetFloat(7.1) // Error: will panic.
 // panic: reflect: reflect.flag.mustBeAssignable using unaddressable value
 ```
 
-问题不在于值7.1是不可寻址的，而是因为 v不是settable的。
+问题不在于值7.1是不可寻址的，而是因为 `v`不是`settable`的。
 
-settable是`reflect.Value`的属性，但并不是所有类型的`reflect.Value`都具有该属性。
+`settable`是`reflect.Value`的属性，但并不是所有类型的`reflect.Value`都具有该属性。
 
 ```text
 var x float64 = 3.4
@@ -276,7 +344,7 @@ v := reflect.ValueOf(x)
 fmt.Println("settability of v:", v.CanSet()) // settability of v: false
 ```
 
-settability是指反射对象可以修改用于创建反射对象的实际对象的存储空间，settability由反射对象是否持有原始item确定。上例中，传入`reflect.ValueOf`方法的是变量x的copy，而不是x本身。
+settability是指**反射对象可以修改用于创建反射对象的实际对象的存储空间**，settability由反射对象是否持有原始item确定。上例中，传入`reflect.ValueOf`方法的是变量x的copy，而不是x本身。
 
 与函数传参的传值、传引用类似，要想修改反射对象，需要传入指针。
 
@@ -323,5 +391,27 @@ output:
 s.Field(0).SetInt(77)
 s.Field(1).SetString("Sunset Strip")
 fmt.Println("t is now", t) // t is now {77 Sunset Strip}
+```
+
+### 方法调用
+
+通过`reflect.Value`的`MethodByName`拿到方法的`reflect.Value`，再调用其`Call`方法。
+
+```
+type User struct {
+    Id   int
+    Name string
+    Age  int
+}
+
+func (u User) ReflectCallFuncHasArgs(name string, age int) {
+    fmt.Println("ReflectCallFuncHasArgs name: ", name, ", age:", age, "and origal User.Name:", u.Name)
+}
+
+u := User{}
+getValue := reflect.ValueOf(u)
+method := getValue.MethodByName("ReflectCallFuncHasArgs")
+args := []reflect.Value{reflect.ValueOf("sf"), reflect.ValueOf(20)}
+method.Call(args)
 ```
 
