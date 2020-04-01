@@ -8,13 +8,9 @@
 >
 > 如果其中一个类需要调用另外一个类的某一个方法，可以通过第三者转发这个调用。
 
-
-
 ## 结构图
 
-![1585483883874](zhong-jie-zhe-mo-shi.assets/1585483883874.png)
-
-
+![1585483883874](../../../.gitbook/assets/1585483883874.png)
 
 ## 实现
 
@@ -22,81 +18,77 @@
 
 先定义抽象中介者接口：
 
-```
+```text
 type Mediator interface {
-	Send(msg, name string)
-	Register(string, Colleague)
+    Send(msg, name string)
+    Register(string, Colleague)
 }
 ```
 
 再定义抽象同事接口：
 
-```
+```text
 type Colleague interface {
-	Sendmsg(message, colleagueName string)
-	SetMediator(Mediator)
-	Receivemsg(message string)
+    Sendmsg(message, colleagueName string)
+    SetMediator(Mediator)
+    Receivemsg(message string)
 }
 ```
 
 实现具体的中介者：
 
-```
+```text
 type ConcreteMediator struct {
-	maps map[string]Colleague
+    maps map[string]Colleague
 }
 func(m *ConcreteMediator) Register(name string, c Colleague) {
-	m.maps[name] = c
+    m.maps[name] = c
 }
 func(m *ConcreteMediator) Send(msg, name string) {
-	m.maps[name].Receivemsg(msg)
+    m.maps[name].Receivemsg(msg)
 }
 ```
 
 实现具体的同事：
 
-```
+```text
 type ConcreteColleague struct {
-	mediator Mediator
-	name string
+    mediator Mediator
+    name string
 }
 
 func (c *ConcreteColleague) Sendmsg(message, colleagueName string) {
-	c.mediator.Send(message, colleagueName)
+    c.mediator.Send(message, colleagueName)
 }
-func (c *ConcreteColleague)	SetMediator(m Mediator) {
-	c.mediator = m
-	m.Register(c.name, c)
+func (c *ConcreteColleague)    SetMediator(m Mediator) {
+    c.mediator = m
+    m.Register(c.name, c)
 }
-func (c *ConcreteColleague)	Receivemsg(message string) {...}
+func (c *ConcreteColleague)    Receivemsg(message string) {...}
 ```
 
 客户端调用：
 
-```
+```text
 var (
-	m Mediator = &ConcreteMediator{maps: make(map[string]Colleague)}
- 	c1 Colleague = &ConcreteColleagueA{name: "c1"}
- 	c2 Colleague = &ConcreteColleagueB{name: "c2"}
+    m Mediator = &ConcreteMediator{maps: make(map[string]Colleague)}
+     c1 Colleague = &ConcreteColleagueA{name: "c1"}
+     c2 Colleague = &ConcreteColleagueB{name: "c2"}
  )
  c1.SetMediator(m)
  c2.SetMediator(m)
- 
+
  c1.Sendmsg("hello", "c2")
 ```
 
-
-
 ## 优点
 
-- 减少了各个`Colleague`的耦合，使得可以独立地改变和复用各个`Colleague`类和`Mediator`
-- 由于把对象如何协作进行了抽象，将中介作为一个独立的概念并将其封装在一个对象中，这样关注的对象就从对象各自本身的行为转移到它们之间的交互上来，也就是站在一个更宏观的角度去看待系统
-
-
+* 减少了各个`Colleague`的耦合，使得可以独立地改变和复用各个`Colleague`类和`Mediator`
+* 由于把对象如何协作进行了抽象，将中介作为一个独立的概念并将其封装在一个对象中，这样关注的对象就从对象各自本身的行为转移到它们之间的交互上来，也就是站在一个更宏观的角度去看待系统
 
 ## 缺点
 
-- 由于`mediator`控制了集中化，就把交互复杂性变为了中介者的复杂性，这就使得中介者变得比任何一个`colleague`都复杂。**一旦中介者出现问题，将影响全局。**
+* 由于`mediator`控制了集中化，就把交互复杂性变为了中介者的复杂性，这就使得中介者变得比任何一个`colleague`都复杂。**一旦中介者出现问题，将影响全局。**
 
 中介者模式一般应用于一组对象以定义良好但是复杂的方式进行通信的场合，以及想定制一个分布在多个类中的行为，而又不想生成太多的子类的场合。
 

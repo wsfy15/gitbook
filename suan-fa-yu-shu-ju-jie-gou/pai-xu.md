@@ -26,15 +26,15 @@
 
 对数据`[4，5，6，3，2，1]`排序，第一次冒泡过程如下：
 
-![1581675650451](../.gitbook/assets/1581675650451.png)
+![1581675650451](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581675650451.png)
 
-![1581675705877](../.gitbook/assets/1581675705877.png)
+![1581675705877](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581675705877.png)
 
 有多少个元素就要多少次冒泡。但是，如果**当某次冒泡操作已经没有数据交换时，说明已经达到完全有序，不用再继续执行后续的冒泡操作**。
 
 下面这个例子，给6个元素排序，只需要4次冒泡操作就可以了。
 
-![1581675853810](../.gitbook/assets/1581675853810.png)
+![1581675853810](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581675853810.png)
 
 #### 代码实现
 
@@ -70,7 +70,7 @@ func bubbleSort(a []int) {
 
 下图左侧为已排序区间，右侧是未排序区间。每次将未排序区间中的第一个元素插入到已排序区间中相应的位置。
 
-![1581679458290](../.gitbook/assets/1581679458290.png)
+![1581679458290](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581679458290.png)
 
 #### 代码实现
 
@@ -123,7 +123,7 @@ func insertSort(a []int) {
 
 实现思路类似插入排序，也分已排序区间和未排序区间。但是选择排序**每次会从未排序区间中找到最小的元素，将其放到已排序区间的末尾**。初始排序区为空。
 
-![1581681137489](../.gitbook/assets/1581681137489.png)
+![1581681137489](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581681137489.png)
 
 #### 代码实现
 
@@ -152,7 +152,7 @@ func selectSort(a []int) {
 
 核心思想：先把数组从中间分成前后两部分，然后对前后两部分分别排序，再将排好序的两部分合并在一起，这样整个数组就都有序了。
 
-![](../.gitbook/assets/db7f892d3355ef74da9cd64aa926dc2b-a474980a.jpg)
+![](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/db7f892d3355ef74da9cd64aa926dc2b-a474980a.jpg)
 
 #### 代码实现
 
@@ -213,7 +213,7 @@ mergeSort(a, 0, len(a) - 1)
 
 遍历p到r之间的数据，将小于pivot的放到左边，将大于pivot的放到右边，将pivot放到中间。经过这一步骤之后，数组p到r之间的数据就被分成了三个部分，前面p到q-1之间都是小于pivot的，中间是pivot，后面的q+1到r之间是大于pivot的。
 
-![](../.gitbook/assets/086002d67995e4769473b3f50dd96de7-237d8d1b.jpg)
+![](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/086002d67995e4769473b3f50dd96de7-237d8d1b.jpg)
 
 #### 代码实现
 
@@ -233,7 +233,7 @@ func partition(a []int, start, end int) int {
     i := start
     for j := start; j <= end; j++ {
         if a[j] < pivot {
-        	a[i], a[j] = a[j], a[i]
+            a[i], a[j] = a[j], a[i]
             i++
         }
     }
@@ -250,7 +250,7 @@ func partition(a []int, start, end int) int {
 
 两者都是采用分治思想。
 
-![1581692080636](../.gitbook/assets/1581692080636.png)
+![1581692080636](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581692080636.png)
 
 归并排序的处理过程是由下到上的，先处理子问题，然后再合并。而快排正好相反，它的处理过程是由上到下的，先分区，然后再处理子问题。
 
@@ -284,7 +284,7 @@ func partition(a []int, start, end int) int {
 
 以字符串排序为例，思路如下：
 
-![1581779599510](../.gitbook/assets/1581779599510.png)
+![1581779599510](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581779599510.png)
 
 **这里按照每位来排序的排序算法必须是稳定的。**如果是非稳定排序算法，那最后一次排序只会考虑最高位的大小顺序，完全不管其他位的大小关系，那么低位的排序就完全没有意义了。
 
@@ -300,9 +300,9 @@ func partition(a []int, start, end int) int {
 
 核心思想：将要排序的数据分到几个有序的桶里，每个桶里的数据再单独进行排序。桶内排完序之后，再把每个桶里的数据按照顺序依次取出，组成的序列就是有序的了。
 
-![1581745554819](../.gitbook/assets/1581745554819.png)
+![1581745554819](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581745554819.png)
 
-如果要排序的数据有n个，我们把它们均匀地划分到m个桶内，每个桶里就有$k=n/m$个元素。每个桶内部使用快速排序，时间复杂度为$O\(k  _logk\)$。m个桶排序的时间复杂度就是$O\(m_  k  _logk\)$，因为$k=n/m$，所以整个桶排序的时间复杂度就是$O\(n_log\(n/m\)\)$。当桶的个数m接近数据个数n时，$log\(n/m\)$就是一个非常小的常量，这个时候桶排序的时间复杂度接近$O\(n\)$。
+如果要排序的数据有n个，我们把它们均匀地划分到m个桶内，每个桶里就有$k=n/m$个元素。每个桶内部使用快速排序，时间复杂度为$O\(k _logk\)$。m个桶排序的时间复杂度就是$O\(m_ k \_logk\)$，因为$k=n/m$，所以整个桶排序的时间复杂度就是$O\(n\_log\(n/m\)\)$。当桶的个数m接近数据个数n时，$log\(n/m\)$就是一个非常小的常量，这个时候桶排序的时间复杂度接近$O\(n\)$。
 
 **要求**：
 
@@ -331,21 +331,21 @@ func partition(a []int, start, end int) int {
 
 假设一个数组元素为`[2，5，3，0，2，3，0，3]`，覆盖范围从0到5，所以可以用6个桶存这些数据，即大小为6的数组`C[6]`，其中下标对应取值，遍历数组，得到：
 
-![1581778264810](../.gitbook/assets/1581778264810.png)
+![1581778264810](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581778264810.png)
 
 从图中可以看出，值为3的元素有3个，小于3的有4个，因此在排序好的数组中，3将占据第4、5、6三个下标的位置。
 
-![1581778400200](../.gitbook/assets/1581778400200.png)
+![1581778400200](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581778400200.png)
 
 如何计算每个值在有序数组中对应的位置呢？
 
 通过对`C[6]`数组顺序求和，使`C[k]`里存储小于等于分数k的元素个数：
 
-![1581778481460](../.gitbook/assets/1581778481460.png)
+![1581778481460](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581778481460.png)
 
 接下来，从后到前依次扫描原数组。比如，当扫描到3时，我们可以从数组C中取出下标为3的值7，也就是说，到目前为止，包括自己在内，分数小于等于3的元素有7个，也就是说3是有序数组R中的第7个元素，当3放入到数组R中后，小于等于3的元素就只剩下了6个了，所以相应的`C[3]`要减1，变成6。
 
-![1581778925107](../.gitbook/assets/1581778925107.png)
+![1581778925107](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581778925107.png)
 
 **代码实现**
 
@@ -391,7 +391,7 @@ func countingSort(a []int) {
 
 ### 总结
 
-![1581567600731](../.gitbook/assets/1581567600731.png)
+![1581567600731](https://github.com/wsfy15/gitbook/tree/17f3d3c09b97c5372d33fbb9c3a52b38ac1ae099/.gitbook/assets/1581567600731.png)
 
 #### 应用
 
@@ -430,7 +430,7 @@ $pivot + 1 &gt; k$的情况也类似处理。
 
 假设k=1000，c=200，当我们对小规模数据（比如n=100）排序时，$n^2$的值实际上比$knlogn+c$还要小
 
-$knlogn+c = 1000  _100_  log100 + 200 $远大于$n^2 = 100\*100=10000$
+$knlogn+c = 1000 _100_ log100 + 200 $远大于$n^2 = 100\*100=10000$
 
 所以，对于小规模数据的排序，$O\(n^2\)$的排序算法并不一定比$O\(nlogn\)$排序算法执行的时间长。对于小数据量的排序，选择比较简单、不需要递归的插入排序算法。
 

@@ -8,27 +8,23 @@
 
 类适配器模式通过多重继承对一个接口与另一个接口进行匹配，不支持多重继承（即一个类只有一个父类的情况）的语言不考虑这种模式。
 
-
-
 ## 结构图
 
-![1585459351354](kuo-pei-qi-mo-shi.assets/1585459351354.png)
+![1585459351354](../../../.gitbook/assets/1585459351354.png)
 
 Target是客户所期待的接口，目标可以是具体的或抽象的类、接口。
-
-
 
 ## 实现
 
 假设原有接口`Adaptee`及其实现类：
 
-```
+```text
 type Adaptee interface { // 需要被适配的接口
-	SpecificRequest() 
+    SpecificRequest() 
 }
 
 func NewAdaptee() Adaptee {
-	return &AdapteeImpl{}
+    return &AdapteeImpl{}
 }
 
 type AdapteeImpl struct {...}
@@ -37,37 +33,35 @@ func(*AdapteeImpl) SpecificRequest() {...}
 
 新接口为`Target`：
 
-```
+```text
 type Target interface {
-	Request()
+    Request()
 }
 ```
 
 定义适配器：
 
-```
+```text
 type Adapter struct {
-	adaptee Adaptee
+    adaptee Adaptee
 }
 
 func NewAdapter(adaptee Adaptee) *Adapter {
-	return &Adapter{
-		adaptee: adaptee,
-	}
+    return &Adapter{
+        adaptee: adaptee,
+    }
 }
 
 func(this *Adapter) Request() {
-	this.adaptee.SpecificRequest() // 把源接口转换成目标接口
+    this.adaptee.SpecificRequest() // 把源接口转换成目标接口
 }
 ```
 
-
-
 客户端调用：
 
-```
+```text
 adaptee := NewAdaptee()
 target := NewAdapter(adaptee)
-target.Request() 
+target.Request()
 ```
 
