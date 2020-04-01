@@ -1,4 +1,4 @@
-# 接口与反射
+# interface
 
 变量包括`(type, value)`两部分，`type`包括`static type`和`concrete type`，`static type`是编码时看见的类型（例如`int、string`），`concrete type`是runtime系统看见的类型。
 
@@ -109,7 +109,7 @@ s := []int(i) // cannot convert i (type int) to type []int
 
 空接口 `interface{}` 没有定义任何函数，因此 Go 中所有类型都实现了空接口。当一个函数的形参是 `interface{}`，那么在函数中，需要对形参进行断言，从而得到它的真实类型。
 
-> &lt;目标类型的值&gt;，&lt;布尔参数&gt; := &lt;表达式&gt;.\( 目标类型 \) // 安全类型断言 
+> &lt;目标类型的值&gt;，&lt;布尔参数&gt; := &lt;表达式&gt;.\( 目标类型 \) // 安全类型断言
 >
 > &lt;目标类型的值&gt; := &lt;表达式&gt;.\( 目标类型 \) //非安全类型断言
 
@@ -177,13 +177,13 @@ type Student struct {
 
 例如某类型有 `m` 个方法，某接口有 `n` 个方法，则很容易知道这种判定的时间复杂度为 `O(m*n)`，Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 `O(m+n)`。
 
-1. 具体类型转空接口时，`_type `字段直接复制源类型的 `_type`；调用 `mallocgc `获得一块新内存，把值复制进去，`data `再指向这块新内存。
-2. 具体类型转非空接口时，入参 `tab `是编译器在编译阶段预先生成好的，新接口 `tab `字段直接指向入参 tab 指向的 `itab`；调用 `mallocgc `获得一块新内存，把值复制进去，`data `再指向这块新内存。
-3. 而对于接口转接口，`itab `调用 `getitab `函数获取。只用生成一次，之后直接从 hash 表中获取。
+1. 具体类型转空接口时，`_type`字段直接复制源类型的 `_type`；调用 `mallocgc`获得一块新内存，把值复制进去，`data`再指向这块新内存。
+2. 具体类型转非空接口时，入参 `tab`是编译器在编译阶段预先生成好的，新接口 `tab`字段直接指向入参 tab 指向的 `itab`；调用 `mallocgc`获得一块新内存，把值复制进去，`data`再指向这块新内存。
+3. 而对于接口转接口，`itab`调用 `getitab`函数获取。只用生成一次，之后直接从 hash 表中获取。
 
 ## reflection
 
-**反射就是用来检测存储在接口变量内部`(value, concrete type) `pair对的一种机制。**
+**反射就是用来检测存储在接口变量内部`(value, concrete type)`pair对的一种机制。**
 
 ### 接口的值
 
@@ -209,10 +209,10 @@ w = r.(io.Writer)    // w 的 (value, type)对为：(tty, *os.File)
 
 最基础的反射就是从一个接口变量得到其`(value, type)`对，reflect包提供了`reflect.TypeOf` 和`reflect.ValueOf`这两个方法。
 
-> ```
+> ```text
 > ValueOf returns a new Value initialized to the concrete value stored in the interface i. 
 > ValueOf(nil) returns the zero Value.
-> 
+>
 > TypeOf returns the reflection Type that represents the dynamic type of i.
 > If i is a nil interface value, TypeOf returns nil.
 > ```
@@ -283,15 +283,15 @@ fmt.Printf("value is %7.1e\n", value.Interface()) // 知道是个float64值，�
 
 可以通过遍历Field进行判断
 
-```
+```text
 type User struct {
-	Name string
-	Age int
+    Name string
+    Age int
 }
 
 v := User {
-	Name: "sf",
-	Age: 20,
+    Name: "sf",
+    Age: 20,
 }
 
 getType := reflect.TypeOf(v)
@@ -299,24 +299,24 @@ getValue := reflect.ValueOf(v)
 
 // 遍历数据字段
 for i := 0; i < getType.NumField(); i++ {
-	field := getType.Field(i)
-	value := getValue.Field(i).Interface()
-	fmt.Printf("%s: %v = %v\n", field.Name, field.Type, value)
+    field := getType.Field(i)
+    value := getValue.Field(i).Interface()
+    fmt.Printf("%s: %v = %v\n", field.Name, field.Type, value)
 }
 
 // 遍历方法
 for i := 0; i < getType.NumMethod(); i++ {
-	m := getType.Method(i)
-	fmt.Printf("%s: %v\n", m.Name, m.Type)
+    m := getType.Method(i)
+    fmt.Printf("%s: %v\n", m.Name, m.Type)
 }
 ```
 
 如果`v`是指针，就需要先调用`reflect.Indirect`得到指针指向的值。
 
-```
+```text
 v := &User {
-	Name: "sf",
-	Age: 20,
+    Name: "sf",
+    Age: 20,
 }
 getType := reflect.Indirect(reflect.ValueOf(v)).Type()
 getValue := reflect.Indirect(reflect.ValueOf(v))
@@ -397,7 +397,7 @@ fmt.Println("t is now", t) // t is now {77 Sunset Strip}
 
 通过`reflect.Value`的`MethodByName`拿到方法的`reflect.Value`，再调用其`Call`方法。
 
-```
+```text
 type User struct {
     Id   int
     Name string

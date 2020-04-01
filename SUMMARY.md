@@ -45,7 +45,6 @@
     * [依赖倒置原则](golang-xin-de/she-ji-mo-shi/yi-lai-dao-zhi-yuan-ze.md)
     * [迪米特法则](golang-xin-de/she-ji-mo-shi/di-mi-te-fa-ze.md)
   * [interface](golang-xin-de/interface.md)
-  * [反射](golang-xin-de/fan-she.md)
   * [一些技巧](golang-xin-de/yi-xie-ji-qiao.md)
 * [数学](shu-xue/README.md)
   * [二进制](shu-xue/er-jin-zhi.md)
