@@ -18,6 +18,7 @@
   * [索引](shu-ju-ku/suo-yin/README.md)
     * [普通索引VS唯一索引](shu-ju-ku/suo-yin/pu-tong-suo-yin-vs-wei-yi-suo-yin.md)
     * [选错索引的原因](shu-ju-ku/suo-yin/xuan-cuo-suo-yin-de-yuan-yin.md)
+    * [字符串索引](shu-ju-ku/suo-yin/zi-fu-chuan-suo-yin.md)
   * [锁](shu-ju-ku/suo/README.md)
     * [全局锁](shu-ju-ku/suo/quan-ju-suo.md)
     * [表锁](shu-ju-ku/suo/biao-suo.md)
