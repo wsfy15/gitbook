@@ -4,7 +4,7 @@
 
 一个InnoDB表包含两部分，即：**表结构定义和数据**。在MySQL 8.0版本以前，表结构是存在以`.frm`为后缀的文件里。而MySQL 8.0版本，则已经允许把表结构定义放在系统数据表中了。因为表结构定义占用的空间很小，所以主要讨论的是表数据。
 
-## innodb_file_per_table
+## innodb\_file\_per\_table
 
 表数据既可以存在共享表空间里，也可以是单独的文件。这个行为是由参数`innodb_file_per_table`控制的：
 
@@ -21,10 +21,10 @@
 
 ## 数据删除流程
 
-![B+树索引示意图](biao-kong-jian-de-hui-shou.assets/1587182332187.png)
+![B+&#x6811;&#x7D22;&#x5F15;&#x793A;&#x610F;&#x56FE;](../.gitbook/assets/1587182332187.png)
 
-- **记录复用**：删掉R4这个记录，InnoDB引擎只会把R4这个记录**标记为删除**。如果之后要再插入一个ID在300和600之间的记录时，可能会复用这个位置。但是，磁盘文件的大小并不会缩小。
-- **数据页复用**：InnoDB的数据是按页存储的，如果删掉了一个数据页上的所有记录，整个数据页就可以被复用了。
+* **记录复用**：删掉R4这个记录，InnoDB引擎只会把R4这个记录**标记为删除**。如果之后要再插入一个ID在300和600之间的记录时，可能会复用这个位置。但是，磁盘文件的大小并不会缩小。
+* **数据页复用**：InnoDB的数据是按页存储的，如果删掉了一个数据页上的所有记录，整个数据页就可以被复用了。
 
 但是，**数据页的复用跟记录的复用是不同的。**
 
@@ -44,7 +44,7 @@
 
 如果数据是按照索引递增顺序插入的，那么索引是紧凑的。但如果数据是随机插入的，就可能造成索引的数据页分裂。
 
-![插入数据导致页分裂](biao-kong-jian-de-hui-shou.assets/8083f05a4a4c0372833a6e01d5a8e6ea.png)
+![&#x63D2;&#x5165;&#x6570;&#x636E;&#x5BFC;&#x81F4;&#x9875;&#x5206;&#x88C2;](../.gitbook/assets/8083f05a4a4c0372833a6e01d5a8e6ea.png)
 
 由于page A满了，再插入一个ID是550的数据时，就不得不再申请一个新的页面page B来保存数据了。页分裂完成后，page A的末尾就留下了空洞（注意：实际上，可能不止1个记录的位置是空洞）。
 
@@ -62,7 +62,7 @@
 
 上面的流程可以使用`alter table A engine=InnoDB`命令来实现，在MySQL 5.5版本之前，这个命令的执行流程跟前面描述的差不多，区别只是这个临时表B不需要你自己创建，MySQL会自动完成转存数据、交换表名、删除旧表的操作。
 
-![改锁表DDL](biao-kong-jian-de-hui-shou.assets/1587184085263.png)
+![&#x6539;&#x9501;&#x8868;DDL](../.gitbook/assets/1587184085263.png)
 
 > 在重建表的时候，InnoDB不会把整张表占满，每个页留了1/16给后续的更新用。也就是说，其实重建表之后不是“最”紧凑的。
 
@@ -78,11 +78,11 @@ MySQL 5.6版本开始引入的Online DDL，对这个操作流程做了优化。O
 4. 临时文件生成后，将日志文件中的操作应用到临时文件，得到一个逻辑数据上与表A相同的数据文件，对应的就是图中state3的状态；
 5. 用临时文件替换表A的数据文件。
 
-![Online DDL](biao-kong-jian-de-hui-shou.assets/1587184525048.png)
+![Online DDL](../.gitbook/assets/1587184525048.png)
 
 由于日志文件记录和重放操作这个功能的存在，这个方案在重建表的过程中，允许对表A做增删改操作。这也就是Online DDL名字的来源。
 
-alter语句(修改表名)在启动的时候需要获取MDL写锁，但是这个写锁在真正拷贝数据之前就退化成读锁了。
+alter语句\(修改表名\)在启动的时候需要获取MDL写锁，但是这个写锁在真正拷贝数据之前就退化成读锁了。
 
 为什么要退化呢？为了实现Online，MDL读锁不会阻塞增删改操作。
 
@@ -100,38 +100,36 @@ alter语句(修改表名)在启动的时候需要获取MDL写锁，但是这个�
 
 > 如果有一个1TB的表，现在磁盘间是1.2TB，能不能做一个inplace的DDL呢？
 >
-> 不能，因为tmp_file也是要占用临时空间的。这个inplace是相对于server层而言的，而不是在数据文件里。
+> 不能，因为tmp\_file也是要占用临时空间的。这个inplace是相对于server层而言的，而不是在数据文件里。
 
 重建表的语句`alter table t engine=InnoDB`隐含的意思是：
 
-```
+```text
 mysql> alter table t engine=innodb,ALGORITHM=inplace;
 ```
 
-跟inplace对应的就是拷贝表的方式(MySQL 5.5版本之前)了，用法是：
+跟inplace对应的就是拷贝表的方式\(MySQL 5.5版本之前\)了，用法是：
 
-```
+```text
 mysql> alter table t engine=innodb,ALGORITHM=copy;
 ```
 
 不过，inplace跟Online并不是同一个意思，比如，给InnoDB表的一个字段加全文索引：
 
-```
+```text
 mysql> alter table t add FULLTEXT(field_name);
 ```
 
 这个过程是inplace的，但会阻塞增删改操作，是非Online的。
 
 1. DDL过程如果是Online的，就一定是inplace的；
-2. 反过来未必，也就是说inplace的DDL，有可能不是Online的。截止到MySQL 8.0，添加全文索引（FULLTEXT index）和空间索引(SPATIAL index)就属于这种情况。
+2. 反过来未必，也就是说inplace的DDL，有可能不是Online的。截止到MySQL 8.0，添加全文索引（FULLTEXT index）和空间索引\(SPATIAL index\)就属于这种情况。
 
 ## optimize table、analyze table和alter table
 
-- 从MySQL 5.6版本开始，`alter table t engine = InnoDB`（也就是recreate）默认的就是上面Online DDL的流程了。
-- `analyze table t `不是重建表，只是对表的索引信息做重新统计，没有修改数据，这个过程中加了MDL读锁。
-- `optimize table t `等于recreate + analyze。
-
-
+* 从MySQL 5.6版本开始，`alter table t engine = InnoDB`（也就是recreate）默认的就是上面Online DDL的流程了。
+* `analyze table t`不是重建表，只是对表的索引信息做重新统计，没有修改数据，这个过程中加了MDL读锁。
+* `optimize table t`等于recreate + analyze。
 
 ## 思考题
 
@@ -142,8 +140,6 @@ mysql> alter table t add FULLTEXT(field_name);
 在DDL期间，如果刚好有外部的DML在执行，这期间可能会引入一些新的空洞。
 
 而且，前面提到了，重建表之后并不是最紧凑的，因为会给每个页预留$1/16$的空间。
-
-
 
 可能复现该现象的操作：
 
