@@ -16,22 +16,18 @@ InnoDB在执行更新语句时，在更新内存写完redo log后，就返回给
 
 ### 触发flush的场景
 
-- **redo log写满**了，这时候系统会停止所有更新操作，把checkpoint往前推进，redo log留出空间可以继续写。
-  ![redo log状态图](dou-dong-de-yuan-yin.assets/1587175763315.png)
-  checkpoint在往前推移时，同时将cp与cp’两个点之间的日志（浅绿色部分），对应的所有脏页都flush到磁盘上。之后，图中从write pos到CP’之间就是可以再写入的redo log的区域。
-
-- **系统内存不足**。当需要新的内存页，而内存不够用的时候，就要淘汰一些数据页，空出内存给别的数据页使用。如果淘汰的是“脏页”，就要先将脏页写到磁盘。
+* **redo log写满**了，这时候系统会停止所有更新操作，把checkpoint往前推进，redo log留出空间可以继续写。 ![redo log&#x72B6;&#x6001;&#x56FE;](../.gitbook/assets/1587175763315.png) checkpoint在往前推移时，同时将cp与cp’两个点之间的日志（浅绿色部分），对应的所有脏页都flush到磁盘上。之后，图中从write pos到CP’之间就是可以再写入的redo log的区域。
+* **系统内存不足**。当需要新的内存页，而内存不够用的时候，就要淘汰一些数据页，空出内存给别的数据页使用。如果淘汰的是“脏页”，就要先将脏页写到磁盘。
 
   这时候并不能直接把内存淘汰掉，然后等到下次需要请求的时候，从磁盘读入数据页，再拿redo log出来应用。这里其实是从性能考虑的。如果刷脏页一定会写盘，就保证了每个数据页有两种状态：
 
-  - 一种是内存里存在，内存里就肯定是正确的结果，直接返回；
-  - 另一种是内存里没有数据，就可以肯定数据文件上是正确的结果，读入内存后返回。
+  * 一种是内存里存在，内存里就肯定是正确的结果，直接返回；
+  * 另一种是内存里没有数据，就可以肯定数据文件上是正确的结果，读入内存后返回。
 
   这样的效率最高。
 
-- **MySQL认为系统“空闲”的时候**
-
-- **shutdown的时候**
+* **MySQL认为系统“空闲”的时候**
+* **shutdown的时候**
 
 第三种情况是属于MySQL空闲时的操作，这时系统没什么压力，而第四种场景是数据库本来就要关闭了。这两种情况下，不会太关注“性能”问题。接下来主要分析前两种场景。
 
@@ -39,9 +35,9 @@ redo log写满了，要flush脏页，这种情况是InnoDB要尽量避免的。�
 
 内存不够用了，要先将脏页写到磁盘，这种情况其实是常态。**InnoDB用缓冲池（buffer pool）管理内存，缓冲池中的内存页有三种状态：**
 
-- 还没有使用的
-- 使用了并且是干净页
-- 使用了并且是脏页
+* 还没有使用的
+* 使用了并且是干净页
+* 使用了并且是脏页
 
 **InnoDB的策略是尽量使用内存**，因此对于一个长时间运行的库来说，未被使用的页面很少。
 
@@ -49,7 +45,7 @@ redo log写满了，要flush脏页，这种情况是InnoDB要尽量避免的。�
 
 > 一旦一个查询请求需要在执行过程中先flush掉一个脏页时，这个查询就可能要比平时慢了。而MySQL中的**连坐机制**，可能让查询会更慢：在准备刷一个脏页的时候，如果这个数据页旁边的数据页刚好是脏页，就会把这个“邻居”也带着一起刷掉；而且这个把“邻居”拖下水的逻辑还可以继续蔓延，也就是对于每个邻居数据页，如果跟它相邻的数据页也还是脏页的话，也会被放到一起刷。
 >
-> 在InnoDB中，`innodb_flush_neighbors `参数就是用来控制这个行为的，值为1的时候会有上述的“连坐”机制，值为0时表示不找邻居，自己刷自己的。
+> 在InnoDB中，`innodb_flush_neighbors`参数就是用来控制这个行为的，值为1的时候会有上述的“连坐”机制，值为0时表示不找邻居，自己刷自己的。
 >
 > 找“邻居”这个优化在机械硬盘时代是很有意义的，可以减少很多随机IO。机械硬盘的随机IOPS一般只有几百，相同的逻辑操作减少随机IO就意味着系统性能的大幅度提升。
 >
@@ -70,19 +66,18 @@ redo log写满了，要flush脏页，这种情况是InnoDB要尽量避免的。�
 
 这个值建议设置成磁盘的IOPS。磁盘的IOPS可以通过fio这个工具来测试：
 
-```
-$ fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psync -bs=16k -size=500M -numjobs=10 -runtime=10 -group_reporting -name=mytest 
+```text
+$ fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psync -bs=16k -size=500M -numjobs=10 -runtime=10 -group_reporting -name=mytest
 ```
 
 > 如果没有正确设置这个参数，可能会导致MySQL的写入速度很慢，TPS很低，但是数据库主机的IO压力并不大。
 
 **控制刷脏页的速度，参考的因素：**
 
-- 平时不能一直处于全力刷，毕竟磁盘能力不能只用来刷脏页，还需要服务用户请求。
+* 平时不能一直处于全力刷，毕竟磁盘能力不能只用来刷脏页，还需要服务用户请求。
+* 脏页比例。参数`innodb_max_dirty_pages_pct`是脏页比例上限，默认值是75%。InnoDB会根据当前的脏页比例（M），算出一个范围在0到100之间的数字，计算这个数字的伪代码类似这样：
 
-- 脏页比例。参数`innodb_max_dirty_pages_pct`是脏页比例上限，默认值是75%。InnoDB会根据当前的脏页比例（M），算出一个范围在0到100之间的数字，计算这个数字的伪代码类似这样：
-
-  ```
+  ```text
   F1(M) {
     if M >= innodb_max_dirty_pages_pct then
         return 100;
@@ -90,15 +85,11 @@ $ fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psyn
   }
   ```
 
-  
+* redo log写盘速度。InnoDB每次写入的日志都有一个序号，假设当前写入的序号跟checkpoint对应的序号之间的差值为N。InnoDB会根据这个N算出一个范围在0到100之间的数字，这个计算公式可以记为$F2\(N\)$。$F2\(N\)$算法比较复杂，不过N越大，算出来的值就越大。
 
-- redo log写盘速度。InnoDB每次写入的日志都有一个序号，假设当前写入的序号跟checkpoint对应的序号之间的差值为N。InnoDB会根据这个N算出一个范围在0到100之间的数字，这个计算公式可以记为$F2(N)$。$F2(N)$算法比较复杂，不过N越大，算出来的值就越大。
+**根据上述算得的F1\(M\)和F2\(N\)两个值，取其中较大的值记为R，之后引擎就可以按照innodb\_io\_capacity定义的能力乘以R%来控制刷脏页的速度。**
 
-**根据上述算得的F1(M)和F2(N)两个值，取其中较大的值记为R，之后引擎就可以按照innodb_io_capacity定义的能力乘以R%来控制刷脏页的速度。**
-
-![ InnoDB刷脏页速度策略](dou-dong-de-yuan-yin.assets/cc44c1d080141aa50df6a91067475374.png)
-
-
+![ InnoDB&#x5237;&#x810F;&#x9875;&#x901F;&#x5EA6;&#x7B56;&#x7565;](../.gitbook/assets/cc44c1d080141aa50df6a91067475374.png)
 
 ## 预防抖动
 
@@ -106,26 +97,25 @@ InnoDB会在后台刷脏页，而刷脏页的过程是要将内存页写入磁�
 
 要尽量避免这种情况，就要合理地设置`innodb_io_capacity`的值，并且**平时要多关注脏页比例，不要让它经常接近75%**。脏页比例计算：
 
-```
+```text
 mysql> select VARIABLE_VALUE into @a from global_status where VARIABLE_NAME = 'Innodb_buffer_pool_pages_dirty';
 select VARIABLE_VALUE into @b from global_status where VARIABLE_NAME = 'Innodb_buffer_pool_pages_total';
 select @a/@b;
 ```
 
-
-
 ## 思考题
 
-一个内存配置为128GB、innodb_io_capacity设置为20000的大规格实例，正常会将redo log设置成4个1GB的文件。
+一个内存配置为128GB、innodb\_io\_capacity设置为20000的大规格实例，正常会将redo log设置成4个1GB的文件。
 
 但如果在配置的时候不慎将redo log设置成了1个100M的文件，会发生什么情况呢？又为什么会出现这样的情况呢？
 
 每次事务提交都要写redo log，如果设置太小，很快就会被写满，这个“环”将很快被写满，write pos一直追着CP。
 
-![redo log状态图](dou-dong-de-yuan-yin.assets/1587175763315.png)
+![redo log&#x72B6;&#x6001;&#x56FE;](../.gitbook/assets/1587175763315%20%281%29.png)
 
 这时候系统不得不停止所有更新，去推进checkpoint。
 
 这时，你看到的现象就是**磁盘压力很小，但是数据库出现间歇性的性能下跌。**
 
 在这种情况下，连change buffer的优化也失效了。因为checkpoint一直要往前推，这个操作就会触发merge操作，然后又进一步地触发刷脏页操作。
+

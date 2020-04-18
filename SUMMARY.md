@@ -24,6 +24,7 @@
     * [表锁](shu-ju-ku/suo/biao-suo.md)
     * [行锁](shu-ju-ku/suo/hang-suo.md)
   * [抖动的原因](shu-ju-ku/dou-dong-de-yuan-yin.md)
+  * [表空间的回收](shu-ju-ku/biao-kong-jian-de-hui-shou.md)
 * [golang心得](golang-xin-de/README.md)
   * [设计模式](golang-xin-de/she-ji-mo-shi/README.md)
     * [创建型模式](golang-xin-de/she-ji-mo-shi/chuang-jian-xing-mo-shi/README.md)
