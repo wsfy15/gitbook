@@ -354,3 +354,84 @@ mysql> select * from t;
 
 ![&#x53E6;&#x4E00;&#x79CD;&#x60C5;&#x51B5;](../.gitbook/assets/1587049095359.png)
 
+
+
+## 思考题
+
+业务上有这样的需求，A、B两个用户，如果互相关注，则成为好友。设计上是有两张表，一个是`like`表，一个是`friend`表，`like`表有`user_id`、`liker_id`两个字段，设置为复合唯一索引即`uk_user_id_liker_id`。语句执行逻辑是这样的：
+
+以A关注B为例：
+先查询对方有没有关注自己（B有没有关注A）
+`select * from like where user_id = B and liker_id = A;`
+
+- 如果有，则成为好友：`insert into friend;`
+- 没有，则只是单向关注关系：`insert into like;`
+
+但是如果A、B**同时关注对方**，会出现不会成为好友的情况。因为在执行`select`语句时，双方都没关注对方。这种情况要怎么处理？
+
+```
+mysql> CREATE TABLE `like` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `liker_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_id_liker_id` (`user_id`,`liker_id`)
+) ENGINE=InnoDB;
+
+mysql> CREATE TABLE `friend` (
+  id` int(11) NOT NULL AUTO_INCREMENT,
+  `friend_1_id` int(11) NOT NULL,
+  `firned_2_id` int(11) NOT NULL,
+  UNIQUE KEY `uk_friend` (`friend_1_id`,`firned_2_id`)
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+```
+
+> “like”是关键字，不建议使用关键字作为库名、表名、字段名或索引名。
+
+![并发“喜欢”逻辑操作顺序](shi-wu-ge-li.assets/c45063baf1ae521bf5d98b6d7c0e0ced.png)
+
+可以给“like”表增加一个字段，比如叫作 `relation_ship`，并设为整型，取值1(01)、2(10)、3(11)。
+
+> 值是1的时候，表示`user_id `关注 `liker_id`;
+> 值是2的时候，表示`liker_id `关注 `user_id`;
+> 值是3的时候，表示互相关注。
+
+当 A关注B的时候，先比较A和B的大小：
+
+- 如果$A<B$
+
+  ```
+  mysql> begin; /*启动事务*/
+  insert into `like`(user_id, liker_id, relation_ship) values(A, B, 1) on duplicate key update relation_ship=relation_ship | 1;
+  select relation_ship from `like` where user_id=A and liker_id=B;
+  /*代码中判断返回的 relation_ship，
+    如果是1，事务结束，执行 commit
+    如果是3，则执行下面这两个语句：
+    */
+  insert ignore into friend(friend_1_id, friend_2_id) values(A,B);
+  commit;
+  ```
+
+- 如果$A>B$
+
+  ```
+  mysql> begin; /*启动事务*/
+  insert into `like`(user_id, liker_id, relation_ship) values(B, A, 2) on duplicate key update relation_ship=relation_ship | 2;
+  select relation_ship from `like` where user_id=B and liker_id=A;
+  /*代码中判断返回的 relation_ship，
+    如果是2，事务结束，执行 commit
+    如果是3，则执行下面这两个语句：
+  */
+  insert ignore into friend(friend_1_id, friend_2_id) values(B,A);
+  commit;
+  ```
+
+“like”表里的数据保证`user_id < liker_id`，这样不论是A关注B，还是B关注A，在操作“like”表的时候，如果反向的关系已经存在，就会出现行锁冲突。
+
+`insert … on duplicate`语句，确保了在事务内部，执行了这个SQL语句后，就强行占住了这个行锁，之后的`select `判断`relation_ship`这个逻辑时就确保了是在行锁保护下的读操作。
+
+`insert ignore`会忽略导致错误的行，因为friend表的 (`friend_1_id`,`firned_2_id`)索引是唯一索引，防止重复插入的报错。
+
+这里使用唯一索引，是业务可能会插入重复数据，数据库一定要有唯一性约束。
+
