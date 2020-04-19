@@ -24,7 +24,7 @@ mysql> create table T(ID int primary key, c int);
 
 不过，`redo log`的大小是有限制的，例如，可以配置为一组4个文件，每个文件大小为1GB，那么最多可以记录4GB的操作。写的方式是**从头开始写，写到末尾就又回到开头循环写**。
 
-![1586837656782](../.gitbook/assets/1586837656782.png)
+![1586837656782](https://github.com/wsfy15/gitbook/tree/48e0a955057b1c3dc9b2c5f445ace4015c27780c/.gitbook/assets/1586837656782.png)
 
 * `write pos`是当前记录的位置，一边写一边后移，写到第3号文件末尾后就回到0号文件开头。
 * `checkpoint`是还未写入磁盘的操作的起点，也是往后推移并且循环的，后移时需要将该记录更新到磁盘。
@@ -45,7 +45,7 @@ redo log太小的话，会导致很快就被写满，然后不得不强行刷red
 
 在一个事务的更新过程中，日志是要写多次的。比如下面这个事务：
 
-```
+```text
 mysql> begin;
 mysql> insert into t1 ...
 mysql> insert into t2 ...
@@ -54,9 +54,9 @@ mysql> commit;
 
 这个事务要往两个表中插入记录，插入数据的过程中，生成的日志都得先保存起来，但又不能在还没commit的时候就直接写到redo log文件里。
 
-因此这个阶段的日志都是写到redo log buffer，它是一块内存，用来先存redo日志。也就是说，在执行第一个`insert`的时候，数据的内存被修改了(change buffer)，相应的日志写入到了redo log buffer。
+因此这个阶段的日志都是写到redo log buffer，它是一块内存，用来先存redo日志。也就是说，在执行第一个`insert`的时候，数据的内存被修改了\(change buffer\)，相应的日志写入到了redo log buffer。
 
-但是，真正把日志写到redo log磁盘文件（文件名是 ib_logfile+数字），是在执行`commit`语句的时候做的。就算在`commit`执行前crash了，也没有关系，因为之前修改的数据页都是内存中的，redo log也没有写入到redo log磁盘文件，崩溃了就没了，磁盘的数据并没有被修改。
+但是，真正把日志写到redo log磁盘文件（文件名是 ib\_logfile+数字），是在执行`commit`语句的时候做的。就算在`commit`执行前crash了，也没有关系，因为之前修改的数据页都是内存中的，redo log也没有写入到redo log磁盘文件，崩溃了就没了，磁盘的数据并没有被修改。
 
 > 这里说的事务执行过程中不会“主动去刷盘”，以减少不必要的IO消耗。
 >
@@ -76,7 +76,7 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 ### 不支持崩溃恢复
 
-![只用binlog支持崩溃恢复](ri-zhi-xi-tong.assets/1587215472557.png)
+![&#x53EA;&#x7528;binlog&#x652F;&#x6301;&#x5D29;&#x6E83;&#x6062;&#x590D;](../.gitbook/assets/1587215472557.png)
 
 假设只用binlog通过两阶段提交来实现崩溃恢复，这是不可行的，因为binlog没有能力恢复“数据页”。
 
@@ -96,11 +96,9 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 不过，binlog有着redo log无法替代的功能。
 
-- 归档。redo log是循环写，写到末尾是要回到开头继续写的。这样的历史日志没法保留，redo log也就起不到归档的作用。
-- MySQL系统依赖于binlog。binlog作为MySQL一开始就有的功能，被用在了很多地方。其中，MySQL系统高可用的基础，就是binlog复制。
-- 一些公司有异构系统（比如一些数据分析系统），这些系统就靠消费MySQL的binlog来更新自己的数据。关掉binlog的话，这些下游系统就没法输入了。
-
-
+* 归档。redo log是循环写，写到末尾是要回到开头继续写的。这样的历史日志没法保留，redo log也就起不到归档的作用。
+* MySQL系统依赖于binlog。binlog作为MySQL一开始就有的功能，被用在了很多地方。其中，MySQL系统高可用的基础，就是binlog复制。
+* 一些公司有异构系统（比如一些数据分析系统），这些系统就靠消费MySQL的binlog来更新自己的数据。关掉binlog的话，这些下游系统就没法输入了。
 
 ### 与redo log的区别
 
@@ -119,13 +117,13 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 4. 执行器生成这个操作的`binlog`，并把`binlog`写入磁盘。
 5. 执行器调用引擎的提交事务接口，引擎把刚刚写入的`redo log`改成提交（commit）状态，更新完成。
 
-![1586843121296](../.gitbook/assets/1586843121296.png)
+![1586843121296](https://github.com/wsfy15/gitbook/tree/48e0a955057b1c3dc9b2c5f445ace4015c27780c/.gitbook/assets/1586843121296.png)
 
 图中浅色框表示是在InnoDB内部执行的，深色框表示是在执行器中执行的。
 
 最后三步将`redo log`的写入拆成了两个步骤：prepare和commit，这就是"两阶段提交"。
 
-> `commit`语句是MySQL语法中，用于提交一个事务的命令。一般跟`begin/start transaction `配对使用。
+> `commit`语句是MySQL语法中，用于提交一个事务的命令。一般跟`begin/start transaction`配对使用。
 >
 > 图中最后一步的`commit`步骤，指的是事务提交过程中的一个小步骤，也是最后一步。当这个步骤执行完成后，这个事务就提交完成了。
 >
@@ -164,19 +162,19 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 1. 如果redo log里面的事务是完整的，也就是已经有了prepare和commit**标识**，则直接提交；
 2. 如果redo log里面的事务只有完整的prepare，则判断对应的事务binlog是否存在并完整：
+
    a. 如果是，则提交事务。因为已经存在binlog里了，会被从库使用，所以必须提交以保证主备数据一致性。
+
    b. 否则，回滚事务。
 
 > **redo log与binlog如何建立关联？**
 >
 > 它们有一个共同的数据字段，叫XID。崩溃恢复的时候，会按顺序扫描redo log，如果碰到只有prepare、而没有commit的redo log，就拿着XID去binlog找对应的事务。
 
-![ 两阶段提交示意图](ri-zhi-xi-tong.assets/ee9af616e05e4b853eba27048351f62a.jpg)
+![ &#x4E24;&#x9636;&#x6BB5;&#x63D0;&#x4EA4;&#x793A;&#x610F;&#x56FE;](../.gitbook/assets/ee9af616e05e4b853eba27048351f62a.jpg)
 
-- 在时刻A，即写入redo log 处于prepare阶段之后、写binlog之前，发生了崩溃(crash)，由于此时binlog还没写，redo log也还没提交，所以崩溃恢复的时候，这个事务会回滚。这时候，binlog还没写，所以也不会传到备库。
-- 在时刻B，即binlog写完，redo log还没commit前发生crash。根据恢复规则的2(a)，该事务会被提交。
-
-
+* 在时刻A，即写入redo log 处于prepare阶段之后、写binlog之前，发生了崩溃\(crash\)，由于此时binlog还没写，redo log也还没提交，所以崩溃恢复的时候，这个事务会回滚。这时候，binlog还没写，所以也不会传到备库。
+* 在时刻B，即binlog写完，redo log还没commit前发生crash。根据恢复规则的2\(a\)，该事务会被提交。
 
 ## 备份周期的选择
 
@@ -193,8 +191,8 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 一个事务的binlog是有完整格式的：
 
-- statement格式的binlog，最后会有COMMIT；
-- row格式的binlog，最后会有一个XID event。
+* statement格式的binlog，最后会有COMMIT；
+* row格式的binlog，最后会有一个XID event。
 
 在MySQL 5.6.2版本以后，还引入了`binlog-checksum`参数，用来验证binlog内容的正确性。对于binlog日志由于磁盘原因，可能会在日志中间出错的情况，MySQL可以通过校验checksum的结果来发现。所以，MySQL还是有办法验证事务binlog的完整性的。
 
@@ -204,8 +202,4 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 1. 如果是正常运行的实例的话，数据页被修改以后，跟磁盘的数据页不一致，称为脏页。最终数据落盘，就是把内存中的数据页写盘。这个过程，甚至与redo log毫无关系。
 2. 在崩溃恢复场景中，InnoDB如果判断到一个数据页可能在崩溃恢复的时候丢失了更新，就会将它读到内存，然后让redo log更新内存内容。更新完成后，内存页变成脏页，就回到了第一种情况的状态。
-
-
-
-
 
