@@ -101,13 +101,13 @@ Rows matched: 1  Changed: 0  Warnings: 0
 
 对于第一种做法，很容易用锁验证，如果在事务中只是读了a的值，并没有修改，那么就不会给这条记录加写锁。
 
-![&#x9501;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;](../../.gitbook/assets/6d9d8837560d01b57d252c470157ea90.png)
+![&#x9501;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;](https://github.com/wsfy15/gitbook/tree/43072d942538bc48ad935c745e9d5cc4548e5d4d/.gitbook/assets/6d9d8837560d01b57d252c470157ea90.png)
 
 结果sessionB的`update`语句被block了，而加锁是InnoDB才能做的，所以排除第一种做法。
 
 第二种做法通过可见性实验验证。
 
-![&#x53EF;&#x89C1;&#x6027;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;](../../.gitbook/assets/441682b64a3f5dd50f35b12ca4b87c96.png)
+![&#x53EF;&#x89C1;&#x6027;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;](https://github.com/wsfy15/gitbook/tree/43072d942538bc48ad935c745e9d5cc4548e5d4d/.gitbook/assets/441682b64a3f5dd50f35b12ca4b87c96.png)
 
 session A的第二个`select`语句是一致性读（快照读\)，它是不能看见session B的更新的。但它返回的是`(1,3)`，表示它看见了某个新的版本，这个版本只能是session A自己的`update`语句做更新的时候生成，而`update`语句是当前读，即使它读到了a的值是3，它还是做了数据更新，这一行的最新版本变为由A更新的，这样session A才能看见这个值变成了3。
 
@@ -117,7 +117,7 @@ MySQL怎么这么笨，就不会更新前判断一下值是不是相同吗？如
 
 其实MySQL是确认了的。只是在这个语句里面，MySQL认为读出来的值，只有一个确定的 \(`id=1`\), 而要写的是\(`a=3`\)，只从这两个信息是看不出来“不需要修改”的。
 
-![&#x53EF;&#x89C1;&#x6027;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;--&#x5BF9;&#x7167;](../../.gitbook/assets/63dd6df32dacdb827d256e5acb9837c1.png)
+![&#x53EF;&#x89C1;&#x6027;&#x9A8C;&#x8BC1;&#x65B9;&#x5F0F;--&#x5BF9;&#x7167;](https://github.com/wsfy15/gitbook/tree/43072d942538bc48ad935c745e9d5cc4548e5d4d/.gitbook/assets/63dd6df32dacdb827d256e5acb9837c1.png)
 
 这里MySQL通过`where`条件知道数据的`id`为1，`a`为3，而`update`是将`a`更新为3，与原来的值相同，因此进行了优化，没有去更新数据。而因为这一行数据最新版本是其他事务`update`的，对于当前事务是不可见的，所以之后的`select`的结果`a`还是2。
 

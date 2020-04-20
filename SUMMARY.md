@@ -27,6 +27,7 @@
   * [表空间的回收](shu-ju-ku/biao-kong-jian-de-hui-shou.md)
   * [count\(\*\)](shu-ju-ku/count.md)
   * [order by](shu-ju-ku/order-by.md)
+  * [rand](shu-ju-ku/rand.md)
 * [golang心得](golang-xin-de/README.md)
   * [设计模式](golang-xin-de/she-ji-mo-shi/README.md)
     * [创建型模式](golang-xin-de/she-ji-mo-shi/chuang-jian-xing-mo-shi/README.md)
