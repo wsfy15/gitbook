@@ -4,7 +4,7 @@
 
 下面是创建单词表及插入10000条数据的语句：
 
-```
+```text
 mysql> CREATE TABLE `words` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `word` varchar(64) DEFAULT NULL,
@@ -30,13 +30,13 @@ mysql> call idata();
 
 可以通过MySQL的`order by rand()`实现：
 
-```
+```text
 mysql> select word from words order by rand() limit 3;
 ```
 
 但是，该语句的执行流程比较复杂，先通过`explain`命令查看其执行情况：
 
-![使用explain命令查看语句的执行情况](rand.assets/1587356030723.png)
+![&#x4F7F;&#x7528;explain&#x547D;&#x4EE4;&#x67E5;&#x770B;&#x8BED;&#x53E5;&#x7684;&#x6267;&#x884C;&#x60C5;&#x51B5;](../.gitbook/assets/1587356030723.png)
 
 `Extra`字段显示`Using temporary`，表示的是需要使用临时表；`Using filesort`，表示的是需要执行排序操作。
 
@@ -44,7 +44,7 @@ mysql> select word from words order by rand() limit 3;
 
 这条语句执行流程如下：
 
-![随机排序完整流程](rand.assets/2abe849faa7dcad0189b61238b849ffc.png)
+![&#x968F;&#x673A;&#x6392;&#x5E8F;&#x5B8C;&#x6574;&#x6D41;&#x7A0B;](../.gitbook/assets/2abe849faa7dcad0189b61238b849ffc.png)
 
 1. 创建一个临时表。这个临时表使用的是memory引擎，表里有两个字段，第一个字段是double类型，记为字段R，第二个字段是`varchar(64)`类型，记为字段W。并且，这个表没有建索引。
 2. 从words表中，按主键顺序取出所有的word值。对于每一个word值，调用`rand()`函数生成一个大于0小于1的随机小数，并把这个随机小数和word分别存入临时表的R和W字段中，到此，扫描行数是10000。
@@ -56,13 +56,13 @@ mysql> select word from words order by rand() limit 3;
 
 > 位置信息是 **MySQL的表用来定位“一行数据”的属性，**每个引擎用来唯一标识数据行的信息。
 >
-> - 对于有主键的InnoDB表来说，这个rowid就是主键ID
-> - 对于没有主键的InnoDB表来说，InnoDB会自己生成一个长度为6字节的rowid来作为主键。所以即使把表的主键删了，还是可以回表的。
-> - MEMORY引擎不是索引组织表。在这个例子里面，可以认为它就是一个数组。因此，这个rowid其实就是数组的下标
+> * 对于有主键的InnoDB表来说，这个rowid就是主键ID
+> * 对于没有主键的InnoDB表来说，InnoDB会自己生成一个长度为6字节的rowid来作为主键。所以即使把表的主键删了，还是可以回表的。
+> * MEMORY引擎不是索引组织表。在这个例子里面，可以认为它就是一个数组。因此，这个rowid其实就是数组的下标
 
 通过slow log验证：
 
-```
+```text
 mysql> set long_query_time=0;
 mysql> select word from words order by rand() limit 3;
 
@@ -82,9 +82,9 @@ select word from words order by rand() limit 3;
 
 当使用磁盘临时表的时候，对应的就是一个没有显式索引的InnoDB表的排序过程。
 
-为了让查询语句使用磁盘临时表，把`tmp_table_size`和`sort_buffer_size`分别设置成1024和 32768（单位是Byte），把 `max_length_for_sort_data `设置成16。
+为了让查询语句使用磁盘临时表，把`tmp_table_size`和`sort_buffer_size`分别设置成1024和 32768（单位是Byte），把 `max_length_for_sort_data`设置成16。
 
-```
+```text
 set tmp_table_size=1024;
 set sort_buffer_size=32768;
 set max_length_for_sort_data=16;
@@ -98,7 +98,7 @@ select word from words order by rand() limit 3;
 SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
 ```
 
-![OPTIMIZER_TRACE部分结果](rand.assets/1587361359970.png)
+![OPTIMIZER\_TRACE&#x90E8;&#x5206;&#x7ED3;&#x679C;](../.gitbook/assets/1587361359970.png)
 
 因为将`max_length_for_sort_data`设置成16，小于`word`字段的长度定义，所以`sort_mode`里面显示的是`rowid`排序，这个是符合预期的，参与排序的是随机值R字段和rowid字段组成的行。
 
@@ -117,10 +117,10 @@ SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
 可以自定义随机算法，而不是用MySQL的`rand`，例如随机取一个值时：
 
 1. 取得这个表的主键`id`的最大值M和最小值N;
-2. 用随机函数生成一个最大值到最小值之间的数 $X = (M-N)*rand() + N$;
+2. 用随机函数生成一个最大值到最小值之间的数 $X = \(M-N\)\*rand\(\) + N$;
 3. 取不小于X的第一个ID的行。
 
-```
+```text
 mysql> select max(id),min(id) into @M,@N from t;
 set @X= floor((@M-@N+1)*rand() + @N);
 select * from t where id >= @X limit 1;
@@ -128,17 +128,17 @@ select * from t where id >= @X limit 1;
 
 这个方法效率很高，因为取`max(id)`和`min(id)`都是不需要扫描索引的，而第三步的`select`也可以用索引快速定位，可以认为就只扫描了3行。但实际上，这个算法本身并不严格满足随机要求，因为ID中间可能有空洞，因此选择不同行的概率不一样，不是真正的随机。
 
-比如有4个id，分别是1、2、4、5，如果按照这个方法，那么取到` id=4`的这一行的概率是取得其他行概率的两倍。
+比如有4个id，分别是1、2、4、5，如果按照这个方法，那么取到`id=4`的这一行的概率是取得其他行概率的两倍。
 
 如果这四行的id分别是1、2、40000、40001，那这个算法基本就能当bug来看待了。
 
 ### 随机算法2
 
 1. 取得整个表的行数，并记为C。
-2. 取得$ Y = floor(C * rand())$。 floor函数在这里的作用，就是取整数部分。
+2. 取得$ Y = floor\(C \* rand\(\)\)$。 floor函数在这里的作用，就是取整数部分。
 3. 再用`limit Y,1` 取得一行。
 
-```
+```text
 mysql> select count(*) into @C from t;
 set @Y = floor(@C * rand());
 set @sql = concat("select * from t limit ", @Y, ",1");
@@ -147,7 +147,7 @@ execute stmt;
 DEALLOCATE prepare stmt;
 ```
 
-由于`limit `后面的参数不能直接跟变量，所以使用了`prepare + execute`的方法。
+由于`limit`后面的参数不能直接跟变量，所以使用了`prepare + execute`的方法。
 
 MySQL处理`limit Y,1` 的做法就是按顺序一个一个地读出来，丢掉前Y个，然后把下一个记录作为返回结果，因此这一步需要扫描Y+1行。再加上，第一步`count(*)`扫描的C行，总共需要扫描C+Y+1行，执行代价比随机算法1的代价要高，但跟`order by rand()`相比，执行代价还是小很多的。
 
@@ -161,7 +161,7 @@ MySQL处理`limit Y,1` 的做法就是按顺序一个一个地读出来，丢掉
 2. 根据相同的随机方法得到Y1、Y2、Y3；
 3. 再执行三个`limit Y, 1`语句得到三行数据。
 
-```
+```text
 mysql> select count(*) into @C from t;
 set @Y1 = floor(@C * rand());
 set @Y2 = floor(@C * rand());
@@ -171,16 +171,17 @@ select * from t limit @Y2，1；
 select * from t limit @Y3，1；
 ```
 
-这样子扫描行数为$C + (Y1 + 1) + (Y2 + 1) + (Y3 + 1)$，还能进一步优化：
+这样子扫描行数为$C + \(Y1 + 1\) + \(Y2 + 1\) + \(Y3 + 1\)$，还能进一步优化：
 
 取Y1、Y2和Y3里面最大的一个数，记为M，最小的一个数记为N，然后执行下面这条SQL语句：
 
-```
+```text
 mysql> select * from t limit N, M-N+1;
 ```
 
-从结果集里取出第1条、第(Y2 - Y1)条和最后一条条记录即可。（假设Y1 < Y2 < Y3）
+从结果集里取出第1条、第\(Y2 - Y1\)条和最后一条条记录即可。（假设Y1 &lt; Y2 &lt; Y3）
 
 扫描行数为C+M+1行。
 
 但是返回的结果集如果比较大，可以考虑先拿到id集，然后计算三个id，再利用主键索引取这三个id对应的记录。
+
