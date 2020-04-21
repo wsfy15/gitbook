@@ -286,3 +286,15 @@ mysql> select * from geek where c=N order by b limit 1;
 
 所以，`ca`是多余的索引，可以去掉，`cb`需要保留。
 
+
+
+## 思考题
+
+```
+mysql> UPDATE t SET in_time = '2018-08-04 08:34:44' WHERE 1=2 or CODE = 1;
+```
+
+对于表`t`，即使在`CODE`字段上有索引，这条语句也不会走这个索引。
+
+因为`WHERE`条件是`or`，如果改成`and`的话就会走索引，因为满足条件的数据行是满足`CODE`字段要求的数据的子集，可以先选出满足`CODE=1`的数据行后再做前面的判断。而`or`的话，满足条件的数据行不只满足`CODE=1`的数据，因此不走索引。
+
