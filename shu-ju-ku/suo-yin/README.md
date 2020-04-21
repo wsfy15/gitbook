@@ -45,7 +45,7 @@ index (k))engine=InnoDB;
 
 表中R1~R5的`(ID,k)`值分别为`(100,1)、(200,2)、(300,3)、(500,5)和(600,6)`，两棵索引树如图：
 
-![1586928956514](../../.gitbook/assets/1586928956514.png)
+![1586928956514](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1586928956514.png)
 
 根据叶子节点的内容，索引类型分为**主键索引**和**非主键索引**。
 
@@ -130,7 +130,7 @@ insert into T values(100,1, 'aa'),(200,2,'bb'),(300,3,'cc'),(500,5,'ee'),(600,6,
 
 对于上面的表`T`，执行查询语句`select * from T where k between 3 and 5`时，需要执行几次树的搜索操作，会扫描多少行？
 
-![&#x7D22;&#x5F15;&#x7EC4;&#x7EC7;&#x7ED3;&#x6784;](../../.gitbook/assets/1586955472642.png)
+![&#x7D22;&#x5F15;&#x7EC4;&#x7EC7;&#x7ED3;&#x6784;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1586955472642.png)
 
 这条查询语句的执行流程：
 
@@ -175,7 +175,7 @@ mysql> CREATE TABLE `tuser` (
 
 **B+树这种索引结构，可以利用索引的“最左前缀”，来定位记录。**以`(name，age)`这个联合索引来分析。
 
-![&#xFF08;name&#xFF0C;age&#xFF09;&#x7D22;&#x5F15;&#x793A;&#x610F;&#x56FE;](../../.gitbook/assets/1586956785863.png)
+![&#xFF08;name&#xFF0C;age&#xFF09;&#x7D22;&#x5F15;&#x793A;&#x610F;&#x56FE;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1586956785863.png)
 
 索引项是按照索引定义里面出现的字段顺序排序的。
 
@@ -211,13 +211,13 @@ mysql> select * from tuser where name like '张%' and age=10 and ismale=1;
 
 * 在MySQL 5.6之前，只能从ID3开始一个个回表。到主键索引上找出数据行，再对比字段值。
 
-  ![&#x65E0;&#x7D22;&#x5F15;&#x4E0B;&#x63A8;&#x6267;&#x884C;&#x6D41;&#x7A0B;](../../.gitbook/assets/1586957981531.png)
+  ![&#x65E0;&#x7D22;&#x5F15;&#x4E0B;&#x63A8;&#x6267;&#x884C;&#x6D41;&#x7A0B;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1586957981531.png)
 
   在`(name,age)`索引里特意去掉了age的值，因为这个过程InnoDB并不会去看age的值，只是按顺序把“name第一个字是’张’”的记录一条条取出来回表。因此，需要回表4次。
 
 * MySQL 5.6 引入了**索引下推优化**（index condition pushdown\)， 可以在索引遍历过程中，对索引中包含的字段先做判断，直接过滤掉不满足条件的记录，减少回表次数。
 
-  ![&#x7D22;&#x5F15;&#x4E0B;&#x63A8;&#x6267;&#x884C;&#x6D41;&#x7A0B;](../../.gitbook/assets/1586957996888.png)
+  ![&#x7D22;&#x5F15;&#x4E0B;&#x63A8;&#x6267;&#x884C;&#x6D41;&#x7A0B;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1586957996888.png)
 
   InnoDB在`(name,age)`索引内部就判断了age是否等于10，对于不等于10的记录，直接判断并跳过。在这个例子中，只需要对ID4、ID5这两条记录回表取数据判断，就只需要回表2次。
 
@@ -286,11 +286,9 @@ mysql> select * from geek where c=N order by b limit 1;
 
 所以，`ca`是多余的索引，可以去掉，`cb`需要保留。
 
-
-
 ## 思考题
 
-```
+```text
 mysql> UPDATE t SET in_time = '2018-08-04 08:34:44' WHERE 1=2 or CODE = 1;
 ```
 

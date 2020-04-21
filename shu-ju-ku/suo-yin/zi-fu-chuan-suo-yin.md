@@ -30,9 +30,9 @@ mysql> alter table SUser add index index2(email(6));
 
 第一个语句创建的index1索引里面，包含了每个记录的整个字符串；而第二个语句创建的index2索引里面，对于每个记录都是只取前6个字节。它们的数据结构和存储方式如下：
 
-![email &#x7D22;&#x5F15;&#x7ED3;&#x6784;](../../.gitbook/assets/1587133903881.png)
+![email &#x7D22;&#x5F15;&#x7ED3;&#x6784;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1587133903881.png)
 
-![email\(6\) &#x7D22;&#x5F15;&#x7ED3;&#x6784;](../../.gitbook/assets/1587133926907.png)
+![email\(6\) &#x7D22;&#x5F15;&#x7ED3;&#x6784;](https://github.com/wsfy15/gitbook/tree/6f2306b59c065eb5bc72e6f4f1040665a793199a/.gitbook/assets/1587133926907.png)
 
 由于`email(6)`这个索引结构中每个邮箱字段都只取前6个字节（即：zhangs），所以占用的空间会更小，这就是使用前缀索引的优势。但它的缺点是，可能会增加额外的记录扫描次数。
 
@@ -166,7 +166,7 @@ mysql> select id,name,email from SUser where email='zhangssxyz@xxx.com';
 
 假设下表有100万行数据，其中有10万行数据的`b`的值是’1234567890’。
 
-```
+```text
 mysql> CREATE TABLE `table_a` (
   `id` int(11) NOT NULL,
   `b` varchar(10) DEFAULT NULL,
@@ -177,7 +177,7 @@ mysql> CREATE TABLE `table_a` (
 
 现在执行下面的查询语句：
 
-```
+```text
 mysql> select * from table_a where b='1234567890abcd';
 ```
 

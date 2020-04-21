@@ -29,6 +29,8 @@
   * [order by](shu-ju-ku/order-by.md)
   * [rand](shu-ju-ku/rand.md)
   * [索引字段函数操作](shu-ju-ku/suo-yin-zi-duan-han-shu-cao-zuo.md)
+  * [查询变慢的原因](shu-ju-ku/cha-xun-bian-man-de-yuan-yin.md)
+  * [幻读](shu-ju-ku/huan-du.md)
 * [golang心得](golang-xin-de/README.md)
   * [设计模式](golang-xin-de/she-ji-mo-shi/README.md)
     * [创建型模式](golang-xin-de/she-ji-mo-shi/chuang-jian-xing-mo-shi/README.md)
