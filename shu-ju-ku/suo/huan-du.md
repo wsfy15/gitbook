@@ -28,7 +28,7 @@ commit;
 
 先看看如果只给`id=5`这一行数据加锁，而其他行不加锁，会怎么样。
 
-![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;](../../.gitbook/assets/5bc506e5884d21844126d26bbe6fa68b.png)
+![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/5bc506e5884d21844126d26bbe6fa68b.png)
 
 session A在三个不同的时刻执行了相同的SQL语句，这条语句使用的是当前读，并且加上了**写锁**。
 
@@ -49,7 +49,7 @@ session A在三个不同的时刻执行了相同的SQL语句，这条语句使�
 
 session A在T1时刻就声明了，“我要把所有d=5的行锁住，不准别的事务进行读写操作”。而实际上，这个语义被破坏了。
 
-![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;--&#x8BED;&#x4E49;&#x88AB;&#x7834;&#x574F;](../../.gitbook/assets/7a9ffa90ac3cc78db6a51ff9b9075607.png)
+![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;--&#x8BED;&#x4E49;&#x88AB;&#x7834;&#x574F;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/7a9ffa90ac3cc78db6a51ff9b9075607.png)
 
 session B的第二条语句`update t set c=5 where id=0`，语义是“把`id=0、d=5`这一行的c值，改成了5”。
 
@@ -61,7 +61,7 @@ session C也是一样的道理，对`id=1`这一行的修改，也是破坏了Q1
 
 锁的设计是为了保证数据的一致性。而这个一致性，不止是数据库内部数据状态在此刻的一致性，还包含了**数据和日志在逻辑上的一致性**。
 
-![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;--&#x6570;&#x636E;&#x4E00;&#x81F4;&#x6027;&#x95EE;&#x9898;](../../.gitbook/assets/dcea7845ff0bdbee2622bf3c67d31d92.png)
+![&#x5047;&#x8BBE;&#x53EA;&#x5728;id=5&#x8FD9;&#x4E00;&#x884C;&#x52A0;&#x884C;&#x9501;--&#x6570;&#x636E;&#x4E00;&#x81F4;&#x6027;&#x95EE;&#x9898;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/dcea7845ff0bdbee2622bf3c67d31d92.png)
 
 让session A在T1时刻添加一个更新语句，看看如果只锁住`id=5`的数据行，生成的日志怎样。
 
@@ -100,7 +100,7 @@ update t set d=100 where d=5;/*所有d=5的行，d改成100*/
 
 如果给扫描过程中碰到的行都加上写锁，那么其他行就都不能更新了，对应session B会被堵住，
 
-![&#x5047;&#x8BBE;&#x626B;&#x63CF;&#x5230;&#x7684;&#x884C;&#x90FD;&#x88AB;&#x52A0;&#x4E0A;&#x4E86;&#x884C;&#x9501;](../../.gitbook/assets/34ad6478281709da833856084a1e3447.png)
+![&#x5047;&#x8BBE;&#x626B;&#x63CF;&#x5230;&#x7684;&#x884C;&#x90FD;&#x88AB;&#x52A0;&#x4E0A;&#x4E86;&#x884C;&#x9501;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/34ad6478281709da833856084a1e3447.png)
 
 binlog执行序列：
 
@@ -124,29 +124,29 @@ update t set c=5 where id=0; /*(0,5,5)*/
 
 间隙锁，锁的就是两个值之间的空隙。比如表`t`，初始化插入了6个记录，这就产生了7个间隙。
 
-![&#x8868;t&#x4E3B;&#x952E;&#x7D22;&#x5F15;&#x4E0A;&#x7684;&#x884C;&#x9501;&#x548C;&#x95F4;&#x9699;&#x9501;](../../.gitbook/assets/1587519436584.png)
+![&#x8868;t&#x4E3B;&#x952E;&#x7D22;&#x5F15;&#x4E0A;&#x7684;&#x884C;&#x9501;&#x548C;&#x95F4;&#x9699;&#x9501;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/1587519436584.png)
 
 这样，在执行 `select * from t where d=5 for update`的时候，就不止是给数据库中已有的6个记录加上了行锁，还同时加了7个间隙锁。这样就确保了无法再插入新的记录。
 
 > 数据行是可以加上锁的实体，数据行之间的间隙，也是可以加上锁的实体。
 >
-> ![&#x4E24;&#x79CD;&#x884C;&#x9501;&#x95F4;&#x7684;&#x51B2;&#x7A81;&#x5173;&#x7CFB;](../../.gitbook/assets/c435c765556c0f3735a6eda0779ff151.png)
+> ![&#x4E24;&#x79CD;&#x884C;&#x9501;&#x95F4;&#x7684;&#x51B2;&#x7A81;&#x5173;&#x7CFB;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/c435c765556c0f3735a6eda0779ff151.png)
 >
 > 跟行锁有冲突关系的是“另外一个行锁”。
 >
 > 而**跟间隙锁有冲突关系的，则是“往这个间隙中插入一个记录”这个操作**，间隙锁之间不互锁。
 
-![&#x95F4;&#x9699;&#x9501;&#x4E4B;&#x95F4;&#x4E0D;&#x4E92;&#x9501;](../../.gitbook/assets/7c37732d936650f1cda7dbf27daf7498.png)
+![&#x95F4;&#x9699;&#x9501;&#x4E4B;&#x95F4;&#x4E0D;&#x4E92;&#x9501;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/7c37732d936650f1cda7dbf27daf7498.png)
 
 这里session B并不会被堵住。因为表`t`里并没有`c=7`这个记录，因此session A加的是不是行锁，而是间隙锁`(5,10)`。而session B也是在这个间隙加的间隙锁。它们有共同的目标，即：保护这个间隙，不允许插入值。但，它们之间是不冲突的。
 
 间隙锁和行锁合称next-key lock，每个next-key lock是**前开后闭区间**。也就是说，表`t`初始化以后，如果用`select * from t for update`要把整个表所有记录锁起来，就形成了7个next-key lock，分别是 `(-∞,0]、(0,5]、(5,10]、(10,15]、(15,20]、(20, 25]、(25, +supremum]`。
 
-> 对于next-key lock，(a, b] 相当于给(a, b)区间加间隙锁，给key=b的数据行加行锁。
+> 对于next-key lock，\(a, b\] 相当于给\(a, b\)区间加间隙锁，给key=b的数据行加行锁。
 >
 > 因为+∞是开区间，实现上，InnoDB给每个索引加了一个不存在的最大值`supremum`，这样才符合“都是前开后闭区间”。
 >
-> **加锁顺序**：先加(a, b)的间隙锁，然后再加key=b的数据行的行锁。
+> **加锁顺序**：先加\(a, b\)的间隙锁，然后再加key=b的数据行的行锁。
 
 #### 影响并发
 
@@ -168,7 +168,7 @@ commit;
 
 因为当有两个线程查询的都是不存在的数据行时，就会锁住同一个间隙，所以两个线程就都死锁了。
 
-![&#x95F4;&#x9699;&#x9501;&#x5BFC;&#x81F4;&#x7684;&#x6B7B;&#x9501;](../../.gitbook/assets/df37bf0bb9f85ea59f0540e24eb6bcbe.png)
+![&#x95F4;&#x9699;&#x9501;&#x5BFC;&#x81F4;&#x7684;&#x6B7B;&#x9501;](https://github.com/wsfy15/gitbook/tree/a6e658b7f4a9e9c295607bc0be4c275d5b52cebc/.gitbook/assets/df37bf0bb9f85ea59f0540e24eb6bcbe.png)
 
 1. session A 执行`select … for update`语句，由于`id=9`这一行并不存在，因此会加上间隙锁`(5,10)`;
 2. session B 执行`select … for update`语句，同样会加上间隙锁`(5,10)`，间隙锁之间不会冲突，因此这个语句可以执行成功；
