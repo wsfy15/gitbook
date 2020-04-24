@@ -16,19 +16,17 @@
 
 **处理方法**：
 
-- **先处理掉那些占着连接但是不工作的线程。**
+* **先处理掉那些占着连接但是不工作的线程。**
 
   `max_connections`的计算，不是看谁在running，是只要连着就占用一个计数位置。对于那些不需要保持的连接，可以通过`kill connection`主动踢掉。这个行为跟事先设置`wait_timeout`的效果是一样的。设置`wait_timeout`参数表示的是，一个线程空闲`wait_timeout`这么多秒之后，就会被MySQL直接断开连接。
 
-  在`show processlist`的结果里，踢掉显示为sleep的线程，可能是有损的。
-  ![sleep线程的两种状态](yin-zhen-zhi-ke-ti-gao-xing-neng-de-fang-fa.assets/9091ff280592c8c68665771b1516c62a.png)
+  在`show processlist`的结果里，踢掉显示为sleep的线程，可能是有损的。 ![sleep&#x7EBF;&#x7A0B;&#x7684;&#x4E24;&#x79CD;&#x72B6;&#x6001;](../.gitbook/assets/9091ff280592c8c68665771b1516c62a.png)
 
   如果断开session A的连接，因为这时候session A还没有提交，所以MySQL只能按照回滚事务来处理；而断开session B的连接，就没什么大影响。所以，如果按照优先级来说，应该优先断开像session B这样的**事务外空闲的连接**。
 
   在`show processlist`的结果里，session A和B的Command都是sleep，Info都是NULL。如何判断哪些是事务外空闲的连接呢？
 
-  这时可以通过`information_schema.innodb_trx`表查看事务具体状态。
-  ![从information_schema.innodb_trx查询事务状态](yin-zhen-zhi-ke-ti-gao-xing-neng-de-fang-fa.assets/ca4b455c8eacbf32b98d1fe9ed9876e8.png)
+  这时可以通过`information_schema.innodb_trx`表查看事务具体状态。 ![&#x4ECE;information\_schema.innodb\_trx&#x67E5;&#x8BE2;&#x4E8B;&#x52A1;&#x72B6;&#x6001;](../.gitbook/assets/ca4b455c8eacbf32b98d1fe9ed9876e8.png)
 
   这个结果里，`trx_mysql_thread_id=4`，表示`id=4`的线程还处在事务中。
 
@@ -36,7 +34,7 @@
 
   从数据库端主动断开连接可能是有损的，尤其是有的应用端收到这个错误后，不重新连接，而是直接用这个已经不能用的句柄重试查询。这会导致从应用端看上去，“MySQL一直没恢复”。
 
-- **减少连接过程的消耗。**
+* **减少连接过程的消耗。**
 
   有的业务代码会在短时间内先大量申请数据库连接做备用，如果确认数据库是被连接行为打挂了，那么一种可能的做法，是让数据库**跳过权限验证阶段**。
 
@@ -44,7 +42,7 @@
 
   但是，这种方法风险极高，尤其是数据库外网可访问的话，就更不能这么做了。
 
-  在MySQL 8.0版本里，如果启用`–skip-grant-tables`参数，MySQL会默认把` --skip-networking`参数打开，表示这时候数据库只能被本地的客户端连接。
+  在MySQL 8.0版本里，如果启用`–skip-grant-tables`参数，MySQL会默认把`--skip-networking`参数打开，表示这时候数据库只能被本地的客户端连接。
 
 ## 慢查询性能
 
@@ -56,9 +54,9 @@
 
 > 实际上出现最多的是前两种，而这两种情况，恰恰是完全可以避免的。比如，通过下面这个过程，我们就可以预先发现问题。
 >
-> 1. 上线前，在测试环境，把慢查询日志(slow log)打开，并且把`long_query_time`设置成0，确保每个语句都会被记录入慢查询日志；
+> 1. 上线前，在测试环境，把慢查询日志\(slow log\)打开，并且把`long_query_time`设置成0，确保每个语句都会被记录入慢查询日志；
 > 2. 在测试表里插入模拟线上的数据，做一遍回归测试；
-> 3. 观察慢查询日志里每类语句的输出，特别留意Rows_examined字段是否与预期一致。
+> 3. 观察慢查询日志里每类语句的输出，特别留意Rows\_examined字段是否与预期一致。
 >
 > 如果测试量比较大，可以使用[pt-query-digest工具](https://www.percona.com/doc/percona-toolkit/3.0/pt-query-digest.html)检查所有的SQL语句的返回结果。
 
@@ -82,19 +80,17 @@
 
 比如，语句被错误地写成了 `select * from t where id + 1 = 10000`，可以通过下面的方式，增加一个语句改写规则：
 
-```
+```text
 mysql> insert into query_rewrite.rewrite_rules(pattern, replacement, pattern_database) values ("select * from t where id + 1 = ?", "select * from t where id = ? - 1", "db1");
 
 mysql> call query_rewrite.flush_rewrite_rules(); # 让插入的新规则生效
 ```
 
-![查询重写效果](yin-zhen-zhi-ke-ti-gao-xing-neng-de-fang-fa.assets/47a1002cbc4c05c74841591d20f7388a.png)
+![&#x67E5;&#x8BE2;&#x91CD;&#x5199;&#x6548;&#x679C;](../.gitbook/assets/47a1002cbc4c05c74841591d20f7388a.png)
 
 ### MySQL选错了索引
 
 给这个语句加上`force index`：使用查询重写功能，给原来的语句加上`force index`。
-
-
 
 ## QPS突增
 

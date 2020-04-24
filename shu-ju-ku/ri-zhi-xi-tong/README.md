@@ -74,19 +74,19 @@ redo log buffer里的内容，不需要每次在生成时就持久化，因为�
 
 > **redo log的三种状态**
 >
-> ![MySQL redo log存储状态](ri-zhi-xi-tong.assets/1587701630038.png)
+> ![MySQL redo log&#x5B58;&#x50A8;&#x72B6;&#x6001;](../../.gitbook/assets/1587701630038.png)
 >
-> - 红色部分：存在redo log buffer中，物理上是在MySQL进程内存中
-> - 黄色部分：写到磁盘(`write`)，但是没有持久化（`fsync`)，物理上是在文件系统的page cache里面
-> - 绿色部分：持久化到磁盘，对应的是hard disk
+> * 红色部分：存在redo log buffer中，物理上是在MySQL进程内存中
+> * 黄色部分：写到磁盘\(`write`\)，但是没有持久化（`fsync`\)，物理上是在文件系统的page cache里面
+> * 绿色部分：持久化到磁盘，对应的是hard disk
 
 日志写到redo log buffer是很快的，`wirte`到page cache也差不多，但是持久化到磁盘的速度就慢多了。
 
 为了控制redo log的写入策略，InnoDB提供了`innodb_flush_log_at_trx_commit`参数，它有三种可能取值：
 
-- `0`：每次事务提交时都只是把redo log留在redo log buffer中;
-- `1`：表示每次事务提交时都将redo log直接持久化到磁盘；
-- `2`：表示每次事务提交时都只是把redo log写到page cache。
+* `0`：每次事务提交时都只是把redo log留在redo log buffer中;
+* `1`：表示每次事务提交时都将redo log直接持久化到磁盘；
+* `2`：表示每次事务提交时都只是把redo log写到page cache。
 
 InnoDB有一个后台线程，每隔1秒，就会把redo log buffer中的日志，调用`write`写到文件系统的page cache，然后调用`fsync`持久化到磁盘。
 
@@ -115,7 +115,7 @@ MySQL整体来看，由Server层和存储引擎层组成。上面介绍的的`re
 
 ### 不支持崩溃恢复
 
-![&#x53EA;&#x7528;binlog&#x652F;&#x6301;&#x5D29;&#x6E83;&#x6062;&#x590D;](../.gitbook/assets/1587215472557.png)
+![&#x53EA;&#x7528;binlog&#x652F;&#x6301;&#x5D29;&#x6E83;&#x6062;&#x590D;](https://github.com/wsfy15/gitbook/tree/0588f684e4ae072323ae076dad8931aee02e2f7e/.gitbook/assets/1587215472557.png)
 
 假设只用binlog通过两阶段提交来实现崩溃恢复，这是不可行的，因为binlog没有能力恢复“数据页”。
 
@@ -180,14 +180,14 @@ binlog的写入逻辑比较简单：事务**执行过程中**，先把日志写�
 
 事务提交的时候，执行器把binlog cache里的完整事务写入到binlog中，并清空binlog cache。
 
-![binlog写盘状态](ri-zhi-xi-tong.assets/9ed86644d5f39efb0efec595abb92e3e.png)
+![binlog&#x5199;&#x76D8;&#x72B6;&#x6001;](../../.gitbook/assets/9ed86644d5f39efb0efec595abb92e3e.png)
 
 每个线程有自己binlog cache，但是共用同一份binlog文件。
 
-- 图中的`write`，是指把日志写入到文件系统的page cache，并没有把数据持久化到磁盘，所以速度比较快。
-- 图中的`fsync`，才是将数据持久化到磁盘的操作。一般情况下，我们认为`fsync`才占磁盘的IOPS。
+* 图中的`write`，是指把日志写入到文件系统的page cache，并没有把数据持久化到磁盘，所以速度比较快。
+* 图中的`fsync`，才是将数据持久化到磁盘的操作。一般情况下，我们认为`fsync`才占磁盘的IOPS。
 
-`write `和`fsync`的时机，是由参数`sync_binlog`控制的：
+`write`和`fsync`的时机，是由参数`sync_binlog`控制的：
 
 1. `sync_binlog=0`的时候，表示每次提交事务都只`write`，不`fsync`；
 2. `sync_binlog=1`的时候，表示每次提交事务都会执行`fsync`；
@@ -196,12 +196,6 @@ binlog的写入逻辑比较简单：事务**执行过程中**，先把日志写�
 在出现IO瓶颈的场景里，将`sync_binlog`设置成一个比较大的值，可以提升性能。在实际的业务场景中，考虑到丢失日志量的可控性，一般不建议将这个参数设成0，比较常见的是将其设置为100~1000中的某个数值。
 
 将`sync_binlog`设置为N的风险是：如果主机发生异常重启，会丢失最近N个事务的binlog日志。
-
-
-
-
-
-
 
 ## 两阶段提交
 
@@ -243,7 +237,7 @@ binlog的写入逻辑比较简单：事务**执行过程中**，先把日志写�
 >
 > 它们有一个共同的数据字段，叫XID。崩溃恢复的时候，会按顺序扫描redo log，如果碰到只有prepare、而没有commit的redo log，就拿着XID去binlog找对应的事务。
 
-![ &#x4E24;&#x9636;&#x6BB5;&#x63D0;&#x4EA4;&#x793A;&#x610F;&#x56FE;](../.gitbook/assets/ee9af616e05e4b853eba27048351f62a.jpg)
+![ &#x4E24;&#x9636;&#x6BB5;&#x63D0;&#x4EA4;&#x793A;&#x610F;&#x56FE;](https://github.com/wsfy15/gitbook/tree/0588f684e4ae072323ae076dad8931aee02e2f7e/.gitbook/assets/ee9af616e05e4b853eba27048351f62a.jpg)
 
 * 在时刻A，即写入redo log 处于prepare阶段之后、写binlog之前，发生了崩溃\(crash\)，由于此时binlog还没写，redo log也还没提交，所以崩溃恢复的时候，这个事务会回滚。这时候，binlog还没写，所以也不会传到备库。
 * 在时刻B，即binlog写完，redo log还没commit前发生crash。根据恢复规则的2\(a\)，该事务会被提交。
@@ -291,7 +285,7 @@ LSN也会写到InnoDB的数据页中，来确保数据页不会被多次执行�
 
 下图是三个并发事务`(trx1, trx2, trx3)`在prepare 阶段，都写完redo log buffer，持久化到磁盘的过程，对应的LSN分别是50、120 和160。
 
-![redo log 组提交](ri-zhi-xi-tong.assets/933fdc052c6339de2aa3bf3f65b188cc.png)
+![redo log &#x7EC4;&#x63D0;&#x4EA4;](../../.gitbook/assets/933fdc052c6339de2aa3bf3f65b188cc.png)
 
 1. trx1是第一个到达的，会被选为这组的 leader；
 2. 等trx1要开始写盘的时候，这个组里面已经有了三个事务，这时候LSN也变成了160；
@@ -304,7 +298,7 @@ LSN也会写到InnoDB的数据页中，来确保数据页不会被多次执行�
 
 为了让一次`fsync`带的组员更多，MySQL有一个很有趣的优化：拖时间。
 
-![两阶段提交](ri-zhi-xi-tong.assets/1587711819317.png)
+![&#x4E24;&#x9636;&#x6BB5;&#x63D0;&#x4EA4;](../../.gitbook/assets/1587711819317.png)
 
 两阶段提交中，”写binlog“其实是分成两步的：
 
@@ -313,13 +307,13 @@ LSN也会写到InnoDB的数据页中，来确保数据页不会被多次执行�
 
 MySQL为了让组提交的效果更好，把redo log做`fsync`的时间拖到了步骤1之后：
 
-![两阶段提交细化](ri-zhi-xi-tong.assets/1587711878621.png)
+![&#x4E24;&#x9636;&#x6BB5;&#x63D0;&#x4EA4;&#x7EC6;&#x5316;](../../.gitbook/assets/1587711878621.png)
 
 这么一来，binlog也可以组提交了。在执行第4步把binlog `fsync`到磁盘时，如果有多个事务的binlog已经写完了，也是一起持久化的，这样也可以减少IOPS的消耗。
 
 通常情况下第3步执行得会很快，所以binlog的`write`和`fsync`间的间隔时间短，导致能集合到一起持久化的binlog比较少，因此binlog的组提交的效果通常不如redo log的效果那么好。
 
-如果想提升binlog组提交的效果，可以通过设置 `binlog_group_commit_sync_delay `和 `binlog_group_commit_sync_no_delay_count`来实现。
+如果想提升binlog组提交的效果，可以通过设置 `binlog_group_commit_sync_delay`和 `binlog_group_commit_sync_no_delay_count`来实现。
 
 1. `binlog_group_commit_sync_delay`：延迟多少微秒后才调用`fsync`
 2. `binlog_group_commit_sync_no_delay_count`：累积多少次以后才调用`fsync`
@@ -333,12 +327,13 @@ MySQL为了让组提交的效果更好，把redo log做`fsync`的时间拖到了
 
 **如果MySQL出现了性能瓶颈，而且瓶颈在IO上，可以考虑下面的方法：**
 
-- 设置 `binlog_group_commit_sync_delay `和 `binlog_group_commit_sync_no_delay_count`参数，减少binlog的写盘次数。这个方法是基于“额外的故意等待”来实现的，因此可能会增加语句的响应时间，但没有丢失数据的风险。
-- 将`sync_binlog `设置为大于1的值（比较常见是100~1000）。这样做的风险是，主机掉电时会丢binlog日志。
-- 将`innodb_flush_log_at_trx_commit`设置为2。redo log写到文件系统的page cache的速度也是很快的，将这个参数设置成2跟设置成0其实性能差不多。这样做的风险是，主机掉电的时候会丢数据。
+* 设置 `binlog_group_commit_sync_delay`和 `binlog_group_commit_sync_no_delay_count`参数，减少binlog的写盘次数。这个方法是基于“额外的故意等待”来实现的，因此可能会增加语句的响应时间，但没有丢失数据的风险。
+* 将`sync_binlog`设置为大于1的值（比较常见是100~1000）。这样做的风险是，主机掉电时会丢binlog日志。
+* 将`innodb_flush_log_at_trx_commit`设置为2。redo log写到文件系统的page cache的速度也是很快的，将这个参数设置成2跟设置成0其实性能差不多。这样做的风险是，主机掉电的时候会丢数据。
 
 ### 常见问题
 
 Q：执行一个`update`语句以后，再去执行`hexdump`命令直接查看ibd文件内容，为什么没有看到数据有改变呢？
 
 A：可能是因为WAL机制的原因。`update`语句执行完成后，InnoDB只保证写完了redo log、内存，可能还没来得及将数据写到磁盘。
+
