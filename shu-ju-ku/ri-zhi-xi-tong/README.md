@@ -24,7 +24,7 @@ mysql> create table T(ID int primary key, c int);
 
 不过，`redo log`的大小是有限制的，例如，可以配置为一组4个文件，每个文件大小为1GB，那么最多可以记录4GB的操作。写的方式是**从头开始写，写到末尾就又回到开头循环写**。
 
-![1586837656782](https://github.com/wsfy15/gitbook/tree/48e0a955057b1c3dc9b2c5f445ace4015c27780c/.gitbook/assets/1586837656782.png)
+![](../../.gitbook/assets/image%20%284%29.png)
 
 * `write pos`是当前记录的位置，一边写一边后移，写到第3号文件末尾后就回到0号文件开头。
 * `checkpoint`是还未写入磁盘的操作的起点，也是往后推移并且循环的，后移时需要将该记录更新到磁盘。

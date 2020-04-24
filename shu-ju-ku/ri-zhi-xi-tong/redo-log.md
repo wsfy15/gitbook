@@ -8,10 +8,10 @@
 
 不过，`redo log`的大小是有限制的，例如，可以配置为一组4个文件，每个文件大小为1GB，那么最多可以记录4GB的操作。写的方式是**从头开始写，写到末尾就又回到开头循环写**。
 
-![1586837656782](https://github.com/wsfy15/gitbook/tree/48e0a955057b1c3dc9b2c5f445ace4015c27780c/.gitbook/assets/1586837656782.png)
+![](../../.gitbook/assets/image%20%285%29.png)
 
-- `write pos`是当前记录的位置，一边写一边后移，写到第3号文件末尾后就回到0号文件开头。
-- `checkpoint`是还未写入磁盘的操作的起点，也是往后推移并且循环的，后移时需要将该记录更新到磁盘。
+* `write pos`是当前记录的位置，一边写一边后移，写到第3号文件末尾后就回到0号文件开头。
+* `checkpoint`是还未写入磁盘的操作的起点，也是往后推移并且循环的，后移时需要将该记录更新到磁盘。
 
 `write pos`和`checkpoint`之间的空间可以用来记录新的操作，如果`write po`追上了 `checkpoint`，即当MySQL负载一直很高时，没空后移`checkpoint`，导致`redo log`写满了，那么这时就只能先停止对外的服务，先将`redo log`中的一部分更新到磁盘上，推进`checkpoint`，为接下来的更新腾出空间。
 
@@ -58,19 +58,19 @@ redo log buffer里的内容，不需要每次在生成时就持久化，因为�
 
 > **redo log的三种状态**
 >
-> ![MySQL redo log&#x5B58;&#x50A8;&#x72B6;&#x6001;](../../.gitbook/assets/1587701630038.png)
+> ![MySQL redo log&#x5B58;&#x50A8;&#x72B6;&#x6001;](https://github.com/wsfy15/gitbook/tree/9ee3721bf49692ec3d96660cdee86bb7a9b400d3/.gitbook/assets/1587701630038.png)
 >
-> - 红色部分：存在redo log buffer中，物理上是在MySQL进程内存中
-> - 黄色部分：写到磁盘\(`write`\)，但是没有持久化（`fsync`\)，物理上是在文件系统的page cache里面
-> - 绿色部分：持久化到磁盘，对应的是hard disk
+> * 红色部分：存在redo log buffer中，物理上是在MySQL进程内存中
+> * 黄色部分：写到磁盘\(`write`\)，但是没有持久化（`fsync`\)，物理上是在文件系统的page cache里面
+> * 绿色部分：持久化到磁盘，对应的是hard disk
 
 日志写到redo log buffer是很快的，`wirte`到page cache也差不多，但是持久化到磁盘的速度就慢多了。
 
 为了控制redo log的写入策略，InnoDB提供了`innodb_flush_log_at_trx_commit`参数，它有三种可能取值：
 
-- `0`：每次事务提交时都只是把redo log留在redo log buffer中;
-- `1`：表示每次事务提交时都将redo log直接持久化到磁盘；
-- `2`：表示每次事务提交时都只是把redo log写到page cache。
+* `0`：每次事务提交时都只是把redo log留在redo log buffer中;
+* `1`：表示每次事务提交时都将redo log直接持久化到磁盘；
+* `2`：表示每次事务提交时都只是把redo log写到page cache。
 
 InnoDB有一个后台线程，每隔1秒，就会把redo log buffer中的日志，调用`write`写到文件系统的page cache，然后调用`fsync`持久化到磁盘。
 

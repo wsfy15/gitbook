@@ -30,18 +30,18 @@ MySQL整体来看，由Server层和存储引擎层组成。`redo log`是InnoDB�
 
 不过，binlog有着redo log无法替代的功能。
 
-- 归档。redo log是循环写，写到末尾是要回到开头继续写的。这样的历史日志没法保留，redo log也就起不到归档的作用。
-- MySQL系统依赖于binlog。binlog作为MySQL一开始就有的功能，被用在了很多地方。其中，MySQL系统高可用的基础，就是binlog复制。
-- 一些公司有异构系统（比如一些数据分析系统），这些系统就靠消费MySQL的binlog来更新自己的数据。关掉binlog的话，这些下游系统就没法输入了。
+* 归档。redo log是循环写，写到末尾是要回到开头继续写的。这样的历史日志没法保留，redo log也就起不到归档的作用。
+* MySQL系统依赖于binlog。binlog作为MySQL一开始就有的功能，被用在了很多地方。其中，MySQL系统高可用的基础，就是binlog复制。
+* 一些公司有异构系统（比如一些数据分析系统），这些系统就靠消费MySQL的binlog来更新自己的数据。关掉binlog的话，这些下游系统就没法输入了。
 
 ## 与redo log的区别
 
-- `redo log`是InnoDB引擎特有的；
-- `binlog`是MySQL的Server层实现的，所有引擎都可以使用。
-- `redo log`是物理日志，记录的是“在某个**数据页**上做了什么修改”
-- `binlog`是逻辑日志，记录的是这个语句的原始逻辑，比如“给`ID=2`这一行的c字段加1 ”
-- `redo log`是循环写的，空间固定会用完
-- `binlog`是可以追加写入的。“追加写”是指`binlog`文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。
+* `redo log`是InnoDB引擎特有的；
+* `binlog`是MySQL的Server层实现的，所有引擎都可以使用。
+* `redo log`是物理日志，记录的是“在某个**数据页**上做了什么修改”
+* `binlog`是逻辑日志，记录的是这个语句的原始逻辑，比如“给`ID=2`这一行的c字段加1 ”
+* `redo log`是循环写的，空间固定会用完
+* `binlog`是可以追加写入的。“追加写”是指`binlog`文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。
 
 在执行更新语句`update T set c=c+1 where ID=1;`时，流程如下：
 
@@ -75,12 +75,12 @@ binlog的写入逻辑比较简单：事务**执行过程中**，先把日志写�
 
 事务提交的时候，执行器把binlog cache里的完整事务写入到binlog中，并清空binlog cache。
 
-![binlog&#x5199;&#x76D8;&#x72B6;&#x6001;](../../.gitbook/assets/9ed86644d5f39efb0efec595abb92e3e.png)
+![binlog&#x5199;&#x76D8;&#x72B6;&#x6001;](https://github.com/wsfy15/gitbook/tree/9ee3721bf49692ec3d96660cdee86bb7a9b400d3/.gitbook/assets/9ed86644d5f39efb0efec595abb92e3e.png)
 
 每个线程有自己binlog cache，但是共用同一份binlog文件。
 
-- 图中的`write`，是指把日志写入到文件系统的page cache，并没有把数据持久化到磁盘，所以速度比较快。
-- 图中的`fsync`，才是将数据持久化到磁盘的操作。一般情况下，我们认为`fsync`才占磁盘的IOPS。
+* 图中的`write`，是指把日志写入到文件系统的page cache，并没有把数据持久化到磁盘，所以速度比较快。
+* 图中的`fsync`，才是将数据持久化到磁盘的操作。一般情况下，我们认为`fsync`才占磁盘的IOPS。
 
 `write`和`fsync`的时机，是由参数`sync_binlog`控制的：
 
@@ -91,3 +91,4 @@ binlog的写入逻辑比较简单：事务**执行过程中**，先把日志写�
 在出现IO瓶颈的场景里，将`sync_binlog`设置成一个比较大的值，可以提升性能。在实际的业务场景中，考虑到丢失日志量的可控性，一般不建议将这个参数设成0，比较常见的是将其设置为100~1000中的某个数值。
 
 将`sync_binlog`设置为N的风险是：如果主机发生异常重启，会丢失最近N个事务的binlog日志。
+
