@@ -89,17 +89,16 @@ kubeadm join 192.168.50.23:6443 --token 4pm43h.968j6bt0jjfvki8n \
 > 一旦想要重新安装或者配置文件有修改，最好先`kubeadm reset`，然后把etcd的存储以及k8s相关的配置给删了，如果没有删除配置文件目录，由于配置文件已存在，可能导致新修改的参数没有写入到相关文件中。这些操作可以通过下面的 restart 脚本自动化完成。
 >
 > ```
-> # 需要手动写入，不然$(docker ps -aq)会被执行
 > $ cat << EOF > restart.sh
 > #!/bin/bash
 > service docker restart
-> docker rm -f $(docker ps -aq)
+> docker rm -f \$(docker ps -aq)
 > service kubelet stop
 > rm -r /etc/kubernetes/ /var/lib/kubelet /var/run/kubernetes /var/lib/cni /var/lib/etcd
 > EOF
 > ```
->
 > 
+>
 
 输出的最后几行，就是用于在worker 节点上执行，加入该集群的命令。kubeadm 提示第一次使用 Kubernetes 集群所需要的配置命令：
 
@@ -185,6 +184,48 @@ kube-flannel-ds-amd64-5pwqq       1/1     Running   0          26s
 kube-proxy-4qj7d                  1/1     Running   0          33s
 kube-scheduler-manager            1/1     Running   0          26s
 ```
+
+> **如果机器是多网卡的话，下载后的kube-flannel.yml 需要修改以指定网卡。**
+>
+> ```
+> $ ip a
+> 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+>     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+>     inet 127.0.0.1/8 scope host lo
+>        valid_lft forever preferred_lft forever
+>     inet6 ::1/128 scope host
+>        valid_lft forever preferred_lft forever
+> 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+>     link/ether 02:fc:38:2c:42:7e brd ff:ff:ff:ff:ff:ff
+>     inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+>        valid_lft 85533sec preferred_lft 85533sec
+>     inet6 fe80::fc:38ff:fe2c:427e/64 scope link
+>        valid_lft forever preferred_lft forever
+> 3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+>     link/ether 08:00:27:6c:e6:de brd ff:ff:ff:ff:ff:ff
+>     inet 192.168.50.150/24 brd 192.168.50.255 scope global enp0s8
+>        valid_lft forever preferred_lft forever
+>     inet6 fe80::a00:27ff:fe6c:e6de/64 scope link
+>        valid_lft forever preferred_lft forever
+> ```
+>
+> 实验用的虚拟机有多张网卡，flannel 会优先使用靠前且不是本地（lo）的网卡，即enp0s3，而这张网卡并不是局域网内通信用的，第三张才是。
+>
+> ```
+> $ vim kube-flannel.yaml
+> ...
+>       containers:
+>       - name: kube-flannel
+>         image: quay.io/coreos/flannel:v0.12.0-amd64 # 找到节点的架构，本机是amd64，因此修改amd64容器下的args
+>         command:
+>         - /opt/bin/flanneld
+>         args:
+>         - --ip-masq
+>         - --kube-subnet-mgr
+>         - --iface=enp0s8 # 添加这一行
+> ```
+>
+> 如果不这么做的话，会导致在Pod 无法与其他机器上的 Pod 通信。
 
 所有的系统Pod 都启动成功了，Flannel 插件在`kube-system`下面新建了 `kube-flannel-ds-amd64-5pwqq` Pod，一般来说，这些 Pod 就是容器网络插件在**每个节点上**的控制组件。
 
