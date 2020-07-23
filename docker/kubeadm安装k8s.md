@@ -430,6 +430,18 @@ rook-discover-t55z8                             1/1     Running   0          65s
 
 这样，一个基于 Rook 持久化存储集群就以容器的方式运行起来了，而接下来在 Kubernetes 上创建的所有 Pod 就能够通过 Persistent Volume（PV）和 Persistent Volume Claim（PVC）的方式，在容器里挂载由 Ceph 提供的数据卷了。而 Rook 则会负责这些数据卷的生命周期管理、灾难备份等运维工作。
 
+> 如果`kubectl delete`了这几个YAML 文件，下一次`apply`前要把`/var/lib/rook`目录删除。
+
+
+
+#### vagrant虚拟机扩容
+
+先安装插件，然后在`Vagrantfile`中加上`config.disksize.size = '50GB'`。
+
+```
+$ vagrant plugin install vagrant-disksize
+```
+
 
 
 
