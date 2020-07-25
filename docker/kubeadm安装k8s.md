@@ -371,7 +371,48 @@ kubernetes-dashboard-567b64d68b-pqgb6        1/1     Running   0          11m
 
 如果不想部署在master 节点上，可以注释yaml 文件中`tolerations`的相关部分。
 
+如果想让外部访问到dashboard，将 YAML 文件的`kubernetes-dashboard` Service 的`spec` 部分 添加` type: NodePort`，这样就可以通过 `<NodeIP>:<NodePort>`访问了。
+
 提前在worker 节点上`docker pull`需要的image，如果遇到网络不通，可以在其他网络状况良好的机器上先pull image，然后`docker save ${imageName} > ${imageName}.tar.gz`，然后把压缩包通过`scp`拷贝到worker 节点上。
+
+
+
+为了生成访问 dashboard 的token，可以创建一个 管理员账号，然后获取其token：
+
+```
+$ cat << EOF > admin-role.yaml 
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: admin
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: admin
+  namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
+EOF
+
+$ kubectl apply -f admin-role.yaml
+$ kubectl get secret -n kube-system
+NAME                                             TYPE                                  DATA   AGE
+admin-token-pfxlg                                kubernetes.io/service-account-token   3      28s
+$ kubectl describe secret admin-token-pfxlg
+# 获取data的token部分
+```
 
 
 
