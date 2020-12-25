@@ -264,7 +264,7 @@ spec:
   type: NodePort
   ports:
   - port: 80 # VIP 的端口
-    targetPort: 80 # Pod 的端口
+    targetPort: 80 # Pod 暴露服务的端口 
     nodePort: 30007 # 宿主机 的端口
     protocol: TCP
     name: http

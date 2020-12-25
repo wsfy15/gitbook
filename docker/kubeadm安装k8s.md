@@ -100,6 +100,22 @@ kubeadm join 192.168.50.23:6443 --token 4pm43h.968j6bt0jjfvki8n \
 > 
 >
 
+
+
+由于是使用docker去拉取镜像，可以配置docker拉取镜像的代理：
+
+```
+$ mkidr -p /etc/systemd/system/docker.service.d
+$ cat > /etc/systemd/system/docker.service.d/http-proxy.conf  <<EOF
+[Service]
+Environment="HTTP_PROXY=http://192.168.0.103:1080"
+EOF
+
+$ systemctl daemon-reload && systemctl restart docker
+```
+
+
+
 输出的最后几行，就是用于在worker 节点上执行，加入该集群的命令。kubeadm 提示第一次使用 Kubernetes 集群所需要的配置命令：
 
 ```
@@ -410,7 +426,7 @@ $ kubectl apply -f admin-role.yaml
 $ kubectl get secret -n kube-system
 NAME                                             TYPE                                  DATA   AGE
 admin-token-pfxlg                                kubernetes.io/service-account-token   3      28s
-$ kubectl describe secret admin-token-pfxlg
+$ kubectl describe secret admin-token-pfxlg -n kube-system
 # 获取data的token部分
 ```
 
@@ -481,6 +497,21 @@ rook-discover-t55z8                             1/1     Running   0          65s
 
 ```
 $ vagrant plugin install vagrant-disksize
+```
+
+
+
+### vagrant+virtualbox 下的注意事项
+
+由于网卡选择问题，需要设置kubelet的节点IP：
+
+```
+$ vim /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+# 添加这一行
+Environment="KUBELET_EXTRA_ARGS=--node-ip=${局域网IP}"
+
+$ systemctl daemon-reload && systemctl restart kubelet
+$ kubelet get nodes -o wide # 发现这些节点的INTERNAL-IP变了
 ```
 
 
