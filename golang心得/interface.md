@@ -46,9 +46,109 @@ func main() {
 
 语法上 `T` 能直接调 `*T` 的方法仅仅是 `Go` 的语法糖，先取到`T`的指针再去调用`*T`的方法。
 
+
+
+### iface
+
+```
+type iface struct {
+    tab  *itab
+    data unsafe.Pointer
+}
+
+type itab struct {
+    inter  *interfacetype // 接口的类型
+    _type  *_type // 实体的类型
+    link   *itab
+    hash   uint32 // copy of _type.hash. Used for type switches.
+    bad    bool   // type does not implement interface
+    inhash bool   // has this itab been added to hash?
+    unused [2]byte
+    fun    [1]uintptr // variable sized 和接口方法对应的具体数据类型的方法地址
+}
+```
+
+`iface` 内部维护两个指针，`tab` 指向一个 `itab` 实体， 它表示接口的类型以及赋给这个接口的实体类型。`data` 则指向接口具体的值，一般而言是一个指向堆内存的指针。
+
+`itab`的`fun`数组大小为1，它存储的是第一个方法的函数指针，如果有更多的方法，在它之后的内存空间里连续存储。从汇编角度来看，通过增加地址就能获取到这些函数指针。这些方法是按照函数名称的字典序进行排列的。
+
+```
+type interfacetype struct {
+    typ     _type // 描述 Go 语言中各种数据类型的结构体
+    pkgpath name // 接口的包名
+    mhdr    []imethod // 接口所定义的函数列表
+}
+```
+
+![iface 结构体全景](interface.assets/724f1808f70187aa1fcbbf82e497e828.png)
+
+
+
+### eface
+
+```
+type eface struct {
+    _type *_type
+    data  unsafe.Pointer
+}
+```
+
+
+
+### _type
+
+```
+type _type struct {
+    // 类型大小
+    size       uintptr
+    ptrdata    uintptr
+    // 类型的 hash 值
+    hash       uint32
+    // 类型的 flag，和反射相关
+    tflag      tflag
+    // 内存对齐相关
+    align      uint8
+    fieldalign uint8
+    // 类型的编号，有bool, slice, struct 等等等等
+    kind       uint8
+    alg        *typeAlg
+    // gc 相关
+    gcdata    *byte
+    str       nameOff
+    ptrToThis typeOff
+}
+```
+
+Go 语言各种数据类型都是在 `_type` 字段的基础上，增加一些额外的字段来进行管理的：
+
+```
+type arraytype struct {
+    typ   _type
+    elem  *_type
+    slice *_type
+    len   uintptr
+}
+type chantype struct {
+    typ  _type
+    elem *_type
+    dir  uintptr
+}
+type slicetype struct {
+    typ  _type
+    elem *_type
+}
+type structtype struct {
+    typ     _type
+    pkgPath name
+    fields  []structfield
+}
+```
+
+
+
 ### iface VS eface
 
-iface包含方法的接口，`eface`即 `interface{}` 。
+iface是包含方法的接口，`eface`不包含任何方法，即 `interface{}` 。
 
 ```text
 type iface struct {
@@ -86,6 +186,10 @@ var _ io.Writer = myWriter{}
 ```
 
 上述赋值语句会发生隐式地类型转换，在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。
+
+
+
+
 
 ### 类型转换、类型断言
 
