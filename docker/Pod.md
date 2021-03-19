@@ -4,8 +4,7 @@
 
 ### 创建 Pod
 
-编写一个YAML 文件，记录容器的定义、参数、配置，然后就可以通过`kubectl apply -f nginx-deployment.yaml`运行这个起来。相比于`docker run`的方式，通过YAML 文件进行部署是 Kubernetes **声明式 API** 所推荐的使用方法。作为用户，你不必关心当前的操作是创建，还是更新，你执行的命令始终是 `kubectl apply`，而 Kubernetes 则会根据YAML 文件的内容变化，自动进行具体的处理。这个流程的好处是，它有助于帮助开发和运维人员，**围绕着可以版本化管理的 YAML 文件，而不**
-**是“行踪不定”的命令行进行协作，从而大大降低开发人员和运维人员之间的沟通成本**。
+编写一个YAML 文件，记录容器的定义、参数、配置，然后就可以通过`kubectl apply -f nginx-deployment.yaml`运行这个起来。相比于`docker run`的方式，通过YAML 文件进行部署是 Kubernetes **声明式 API** 所推荐的使用方法。作为用户，你不必关心当前的操作是创建，还是更新，你执行的命令始终是 `kubectl apply`，而 Kubernetes 则会根据YAML 文件的内容变化，自动进行具体的处理。这个流程的好处是，它有助于帮助开发和运维人员，**围绕着可以版本化管理的 YAML 文件，而不是“行踪不定”的命令行进行协作，从而大大降低开发人员和运维人员之间的沟通成本**。
 
 ```
 apiVersion: apps/v1

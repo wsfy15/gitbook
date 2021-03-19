@@ -1,5 +1,28 @@
 # GMP
 
+## 程序的生命周期
+
+以下面的代码为例，编译为一个可执行文件，执行时可执行文件被加载到内存，在代码段，程序的入口并不是`main.main`。
+
+```
+package main
+func main() {
+  fmtt.Println(1)
+}
+```
+
+在不同平台下，程序入口也有所不同，windows下入口是`_rt0_amd64_windows`，之后会进行一系列检查与初始化等准备工作，以`runtime.main`为执行入口，创建main goroutine，在这个goroutine里面才会去调用`main.main`。
+
+在数据段上有几个全局变量`g0、m0`，分别是主协程对应的g和主线程对应的m，g需要在m上才能运行，g有指向其运行所在的m的指针，m有指向当前正在执行的g的指针。还有一个`sched`全局变量，它代表了调度器，会保存全局G队列，记录所有空闲的m和p。
+
+在早期的调度模型中，只有GM，有一个全局的G队列，每个M都要去这个队列中获取一个G去运行，获取G时就需要加锁，如果频繁发生调度，就会很大影响程序的并发性能。
+
+在GMP模型中，P相当于解耦了G和M的直接关联，P有一个本地G队列，P直接跟M关联，即一个P运行在一个M上，M直接从P的本地队列取出G并运行。不过仍然有一个全局G队列，因为每个P的本地队列大小是有限的，当放不下更多的G时，新的G就会被加到全局G队列。
+
+在程序初始化时，会根据`GOMAXPROCS`这个环境变量决定创建的P的数量，并把第一个P与`m0`进行关联。
+
+
+
 ## G
 
 goroutine 主要保存 goroutine 的一些状态信息以及 CPU 的一些寄存器的值，例如 IP 寄存器，以便在轮到本 goroutine 执行时，CPU 知道要从哪一条指令处开始执行。
@@ -74,26 +97,20 @@ type g struct {
 ```
 // 描述栈的数据结构，栈的范围：[lo, hi)
 type stack struct {
-    // 栈顶，低地址
-    lo uintptr
-    // 栈底，高地址
-    hi uintptr
+    lo uintptr  // 栈顶，低地址
+    hi uintptr  // 栈底，高地址
 }
 ```
 
 寄存器的值保存在了`gobuf`中：
 
 ```
-type gobuf struct {
-    // 存储 rsp 寄存器的值
-    sp   uintptr
-    // 存储 rip 寄存器的值
-    pc   uintptr
-    // 指向 goroutine
-    g    guintptr
+type gobuf struct {  
+    sp   uintptr  // 存储 rsp 寄存器的值
+    pc   uintptr  // 存储 rip 寄存器的值
+    g    guintptr  // 指向 goroutine
     ctxt unsafe.Pointer // this has to be a pointer so that gc scans it
-    // 保存系统调用的返回值
-    ret  sys.Uintreg
+    ret  sys.Uintreg // 保存系统调用的返回值
     lr   uintptr
     bp   uintptr // for GOEXPERIMENT=framepointer
 }
@@ -102,6 +119,14 @@ type gobuf struct {
 
 
 ![G 的状态流转图](GMP.assets/e42490ec98b6897bae32eb4e4d9d637c.png)
+
+
+
+### 抢占
+
+在go1.2 ~ 1.13，通过编译器在函数调用时插入**抢占检查**指令，在**函数调用时**检查当前 Goroutine 是否发起了抢占请求，实现基于协作的抢占式调度。因此对于长时间运行，但没有调用函数的goroutine（例如`for`循环）来说，抢占不了。
+
+go1.14实现了基于信号的抢占式调度，使用了[SIGURP信号](https://github.com/golang/proposal/blob/master/design/24543-non-cooperative-preemption.md#other-considerations)。
 
 
 
@@ -201,6 +226,14 @@ M 只有自旋和非自旋两种状态。自旋的时候，会努力找工作；
 
 
 
+调度器最多可以创建1万个线程，但是其中大多数的线程都不会执行用户代码（可能陷入系统调用），最多只会有`GOMAXPROCS `个活跃线程能够正常运行。
+
+默认情况下线程数等于 CPU 数，这种设置不会频繁触发操作系统的线程调度和上下文切换，**所有的调度都会发生在用户态**，由 Go 语言调度器触发，能够减少很多额外开销。
+
+
+
+
+
 ## P
 
 processor，为 M 的执行提供“上下文”，保存 M 执行 G 时的一些资源，例如本地可运行 G 队列，memeory cache 等。
@@ -211,14 +244,11 @@ processor，为 M 的执行提供“上下文”，保存 M 执行 G 时的一�
 // p 保存 go 运行时所必须的资源
 type p struct {
     lock mutex
-    // 在 allp 中的索引
-    id          int32
+    id          int32 // 在 allp 中的索引
     status      uint32 // one of pidle/prunning/...
     link        puintptr
-    // 每次调用 schedule 时会加一
-    schedtick   uint32
-    // 每次系统调用时加一
-    syscalltick uint32
+    schedtick   uint32 // 每次调用 schedule 时会加一
+    syscalltick uint32 // 每次系统调用时加一
     // 用于 sysmon 线程记录被监控 p 的系统调用时间和运行时间
     sysmontick  sysmontick // last tick observed by sysmon
     // 指向绑定的 m，如果 p 是 idle 的话，那这个指针是 nil
